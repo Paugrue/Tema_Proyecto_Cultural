@@ -1,8 +1,12 @@
+ {
+"rewrites": [
 {
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/"
-    }
-  ]
+"source": "/api-proxy/:path*",
+"destination": "https://arcadium.cluster24.libnamic.eu/:path*"
+},
+{
+"source": "/(.*)",
+"destination": "/"
+}
+]
 }
