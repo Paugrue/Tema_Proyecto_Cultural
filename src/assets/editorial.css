@@ -1,0 +1,302 @@
+/* =========================================================
+   CONEXIÓN ENTRE VUETIFY THEME Y CSS EDITORIAL
+   ========================================================= */
+
+:root {
+  /* Colores enlazados al theme de Vuetify */
+  --color-background: rgb(var(--v-theme-background));
+  --color-surface: rgb(var(--v-theme-surface));
+  --color-primary: rgb(var(--v-theme-primary));
+  --color-secondary: rgb(var(--v-theme-secondary));
+  --color-accent: rgb(var(--v-theme-accent));
+
+  /* Colores editoriales derivados */
+  --color-text: rgba(30, 30, 30, 0.92);
+  --color-heading: var(--color-primary);
+  --color-background-soft: var(--color-surface);
+  --color-border: rgba(0, 0, 0, 0.12);
+
+  /* ✅ NUEVO: papel envejecido */
+  --paper-aged: #F6EFD9;
+
+  /* Tipografía */
+  --font-serif: 'Playfair Display', 'Libre Baskerville', serif;
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+
+/* =========================================================
+   BASE GLOBAL
+   ========================================================= */
+
+body,
+.v-application {
+  font-family: var(--font-sans);
+  background: var(--color-background);
+  color: var(--color-text);
+}
+
+
+/* =========================================================
+   CAJA DE BÚSQUEDA
+   ========================================================= */
+
+.search-box {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  width: 100%;
+  max-width: 880px;
+  margin-top: 40px;
+}
+
+.search-input .v-field {
+  border-radius: 8px !important;
+  border: 1.5px solid var(--color-primary) !important;
+  background-color: var(--paper-aged) !important;
+  font-family: var(--font-serif) !important;
+  font-size: 16px !important;
+  color: rgba(30, 30, 30, 0.9);
+}
+
+.search-input input {
+  color: rgba(30, 30, 30, 0.9) !important;
+}
+
+.search-input input::placeholder {
+  color: rgba(30, 30, 30, 0.55);
+}
+
+
+/* =========================================================
+   TÍTULOS
+   ========================================================= */
+
+.hero-overlay h1,
+.inicio-title,
+.page-title {
+  font-family: var(--font-serif) !important;
+  font-size: clamp(2.6rem, 5vw, 3.6rem) !important;
+  font-weight: 500;
+  color: var(--color-heading) !important;
+  line-height: 1.2;
+}
+
+
+/* =========================================================
+   ENLACES
+   ========================================================= */
+
+a {
+  color: var(--color-primary) !important;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--color-accent);
+}
+
+
+/* =========================================================
+   GRID EDITORIAL
+   ========================================================= */
+
+.editorial-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 28px;
+}
+
+
+/* =========================================================
+   TARJETAS EDITORIALES (FIX DEFINITIVO LIMPIO)
+   ========================================================= */
+
+.v-card.record-card {
+  width: 100%;
+  cursor: pointer;
+
+  background-color: #E6C08E !important; /* 🎨 fondo editorial */
+
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 12px;
+  overflow: hidden;
+
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+
+  /* ✅ tipografía base */
+  font-family: var(--font-sans);
+  color: rgba(0, 0, 0, 0.9); /* 🔥 texto negro legible */
+}
+
+.v-card.record-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08);
+}
+
+/* ✅ Neutralizar SOLO lo necesario (no todo *) */
+.v-card.record-card .v-card-item,
+.v-card.record-card .v-card-title,
+.v-card.record-card .v-card-text,
+.v-card.record-card .v-card-subtitle {
+  background-color: transparent !important;
+}
+
+
+/* TIPOGRAFÍA EDITORIAL UNIFICADA DENTRO DE TARJETAS */
+.record-card {
+  font-family: var(--font-sans) !important;
+  color: rgba(0,0,0,0.95) !important; /* texto negro base */
+}
+
+/* TÍTULOS ESPECÍFICOS */
+.record-card .v-card-title,
+.record-card .v-card-subtitle,
+.record-card .v-card-text,
+.record-card .v-card-item,
+.record-card .record-title,
+.record-card .record-meta {
+  font-family: inherit !important; /* hereda sans o serif según tu elección */
+  color: inherit !important;       /* hereda negro */
+}
+
+.record-card .record-title {
+  font-family: var(--font-serif) !important;
+  font-size: 18px !important;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+/* METADATOS */
+.record-card .record-meta {
+  font-family: var(--font-sans) !important;
+  font-size: 13px !important;
+  color: rgba(0,0,0,0.65) !important;
+}
+
+/* =========================================================
+   IMÁGENES
+   ========================================================= */
+
+.record-image,
+.collection-card .v-img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+
+/* =========================================================
+   CONTENIDO
+   ========================================================= */
+
+.record-title {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.3;
+  margin: 16px 16px 6px;
+  color: var(--color-heading);
+}
+
+.record-meta {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: rgba(30, 30, 30, 0.6);
+  margin: 0 16px 20px;
+}
+
+
+/* =========================================================
+   BOTONES
+   ========================================================= */
+
+.v-btn {
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+}
+
+.v-btn--variant-filled {
+  background: var(--color-primary) !important;
+  color: #ffffff !important;
+}
+
+.v-btn--variant-outlined {
+  border: 1px solid var(--color-primary) !important;
+  color: var(--color-primary) !important;
+}
+
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.hero {
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   NAV
+   ========================================================= */
+
+.nav-minimal {
+  background-color: var(--color-primary);
+}
+
+.menu-link {
+  font-weight: 500;
+  color: rgba(30, 30, 30, 0.7);
+}
+
+.menu-link:hover {
+  color: var(--color-heading);
+}
+
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.footer-minimal {
+  background-color: var(--color-primary) !important;
+  padding: 48px 0;
+}
+
+.footer-text {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.06em;
+}
+
+
+/* =========================================================
+   DRAWER
+   ========================================================= */
+
+.v-navigation-drawer {
+  background-color: var(--color-primary) !important;
+}
+
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 768px) {
+  .editorial-grid {
+    gap: 24px;
+  }
+
+  .record-title {
+    font-size: 16px;
+  }
+}

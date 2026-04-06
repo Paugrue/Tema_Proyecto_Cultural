@@ -1,0 +1,173 @@
+/* =========================================================
+   TIPOGRAFÍA GLOBAL
+   ========================================================= */
+
+body,
+.v-application {
+  font-family: var(--font-sans) !important;
+  background-color: var(--color-background) !important;
+  color: var(--color-text) !important;
+  margin: 0;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =========================================================
+   CONTENEDOR CENTRAL (EDITORIAL)
+   ========================================================= */
+
+.page-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 72px 32px;
+}
+
+/* =========================================================
+   JERARQUÍA TIPOGRÁFICA
+   ========================================================= */
+
+h1 {
+  font-family: var(--font-serif) !important;
+  font-size: clamp(2.6rem, 5vw, 3.6rem) !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.3px !important;
+  margin-bottom: 16px;
+  color: var(--color-heading) !important;
+}
+
+h2 {
+  font-family: var(--font-serif) !important;
+  font-size: clamp(1.7rem, 3vw, 2.3rem) !important;
+  font-weight: 500 !important;
+  margin-bottom: 20px;
+  color: var(--color-heading) !important;
+}
+
+p {
+  color: rgba(30, 30, 30, 0.75) !important;
+  font-size: 16px !important;
+  line-height: 1.7 !important;
+}
+
+/* =========================================================
+   TARJETAS (REGISTROS / COLECCIONES)
+   ========================================================= */
+
+.v-card,
+.card {
+  border-radius: 12px !important;
+  background: var(--color-background-soft) !important;
+  border: 1px solid var(--color-border) !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04) !important;
+  padding: 28px !important;
+  transition: all 0.25s ease;
+}
+
+/* Hover editorial (muy sutil) */
+.v-card:hover,
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* =========================================================
+   BOTONES (EDITORIAL, NO PÍLDORA)
+   ========================================================= */
+
+.v-btn {
+  border-radius: 8px !important; /* ❗ NO pastilla */
+  padding: 12px 24px !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  letter-spacing: 0.2px;
+  font-family: var(--font-sans) !important;
+  transition: all 0.25s ease !important;
+}
+
+/* Botón primario (granate editorial) */
+.v-btn--variant-filled {
+  background: var(--color-primary) !important;
+  color: #ffffff !important;
+}
+
+.v-btn--variant-filled:hover {
+  background: var(--color-primary-hover) !important;
+  transform: translateY(-1px);
+}
+
+/* Botón secundario (outline) */
+.v-btn--variant-outlined {
+  background: transparent !important;
+  border: 1px solid var(--color-primary) !important;
+  color: var(--color-primary) !important;
+}
+
+.v-btn--variant-outlined:hover {
+  background: rgba(107, 47, 58, 0.06) !important;
+}
+
+/* =========================================================
+   HERO (EDITORIAL, NO PUBLICITARIO)
+   ========================================================= */
+
+.hero {
+  filter: saturate(102%) contrast(101%);
+}
+
+/* Overlay más sobrio */
+.hero-overlay {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 48px;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.55),
+    rgba(0, 0, 0, 0.15),
+    transparent
+  );
+  color: #ffffff;
+}
+
+.hero-overlay h1 {
+  font-family: var(--font-serif);
+  font-size: 38px;
+  font-weight: 500;
+}
+
+/* =========================================================
+   LINKS (EDITORIAL)
+   ========================================================= */
+
+a {
+  color: var(--color-primary) !important;
+  text-decoration: none !important;
+  border-bottom: 1px solid rgba(107, 47, 58, 0.35);
+  transition: all 0.2s ease;
+}
+
+a:hover {
+  color: var(--color-primary-hover) !important;
+  border-bottom-color: var(--color-accent);
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 768px) {
+  .page-container {
+    padding: 56px 20px;
+  }
+
+  .hero-overlay {
+    padding: 32px;
+  }
+
+  h1 {
+    font-size: 2.3rem !important;
+  }
+}
+

@@ -1,0 +1,77 @@
+@import "./base.css";
+
+/* =========================================================
+   APP CONTAINER
+   ========================================================= */
+
+#app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem;
+  font-weight: normal;
+}
+
+/* =========================================================
+   ENLACES (EDITORIAL, NO VERDE NI FONDO)
+   ========================================================= */
+
+a {
+  text-decoration: none;
+  color: var(--color-primary);
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--color-accent);
+}
+
+/* Eliminamos clases heredadas del template */
+.green {
+  color: var(--color-primary);
+}
+
+/* =========================================================
+   LAYOUT GENERAL
+   ========================================================= */
+
+/* ❌ Eliminamos el body centrado tipo demo */
+/* ❌ Eliminamos el grid forzado a 2 columnas */
+
+/* El layout real se controla desde componentes */
+
+/* =========================================================
+   SECCIONES PRINCIPALES
+   ========================================================= */
+
+main {
+  display: block;
+}
+
+section {
+  margin-bottom: var(--section-gap);
+}
+
+/* =========================================================
+   GRID EDITORIAL PARA LISTADOS
+   ========================================================= */
+
+.editorial-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 2rem;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 768px) {
+  #app {
+    padding: 2rem 1.25rem;
+  }
+
+  .editorial-grid {
+    grid-template-columns: 1fr;
+  }
+}

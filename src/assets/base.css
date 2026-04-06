@@ -1,0 +1,230 @@
+/* =========================================================
+   BASE COLOR PALETTE (adaptada del theme de Vue)
+   ========================================================= */
+
+:root {
+  --color-background: #F7F7F5;
+  --color-text: #1E1E1E;
+  --color-heading: #6B2F3A;
+
+  --color-primary: #6B2F3A;
+  --color-primary-hover: #8A3E4B;
+
+  --color-accent: #C6A85B;
+  --color-border: #E5E5E5;
+}
+
+/* =========================================================
+   SEMANTIC COLOR VARIABLES (EDITORIAL CULTURAL)
+   ========================================================= */
+
+:root {
+  /* Fondos */
+  --color-background: var(--vt-c-white-soft);
+  --color-background-soft: var(--vt-c-white);
+  --color-background-mute: var(--vt-c-white-mute);
+
+  /* Texto */
+  --color-text: var(--vt-c-black);
+  --color-heading: var(--vt-c-granate);
+
+  /* Bordes */
+  --color-border: var(--vt-c-divider-light-2);
+  --color-border-hover: var(--vt-c-divider-light-1);
+
+  /* Identidad */
+  --color-primary: var(--vt-c-granate);
+  --color-primary-hover: var(--vt-c-granate-hover);
+  --color-accent: var(--vt-c-accent);
+
+  /* Tipografía */
+  --font-serif: "Playfair Display", "Libre Baskerville", "Cormorant Garamond", serif;
+  --font-sans: "Inter", "Source Sans 3", "IBM Plex Sans", system-ui, sans-serif;
+
+  /* Ritmo */
+  --section-gap: 140px;
+}
+
+/* =========================================================
+   RESET BÁSICO
+   ========================================================= */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  font-weight: normal;
+}
+
+/* =========================================================
+   BODY BASE (LECTURA EDITORIAL)
+   ========================================================= */
+
+body {
+  min-height: 100vh;
+  color: var(--color-text);
+  background: var(--color-background);
+
+  transition:
+    color 0.3s ease,
+    background-color 0.3s ease;
+
+  line-height: 1.65;
+  font-family: var(--font-sans);
+  font-size: 16px;
+
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =========================================================
+   TITULOS (SERIF EDITORIAL)
+   ========================================================= */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  color: var(--color-heading);
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: clamp(2.6rem, 5vw, 3.6rem);
+  margin-bottom: 0.5em;
+}
+
+h2 {
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  margin-bottom: 0.6em;
+}
+
+h3 {
+  font-size: 1.4rem;
+  margin-bottom: 0.6em;
+}
+
+/* =========================================================
+   TEXTO Y ENLACES (EDITORIAL)
+   ========================================================= */
+
+p {
+  margin-bottom: 1em;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--color-accent);
+}
+
+/* =========================================================
+   SEPARADORES / SECCIONES
+   ========================================================= */
+
+section {
+  margin-bottom: var(--section-gap);
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 3rem 0;
+}
+
+/* =========================================================
+   BASE PARA BOTONES (se usarán en componentes)
+   ========================================================= */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0.75rem 1.25rem;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 500;
+
+  border-radius: 6px;
+  border: 1px solid var(--color-primary);
+
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+/* Botón primario */
+.button--primary {
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+.button--primary:hover {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+/* Botón secundario */
+.button--secondary {
+  background: transparent;
+  color: var(--color-primary);
+}
+
+.button--secondary:hover {
+  background: rgba(107, 47, 58, 0.06);
+}
+
+/* Botón textual */
+.button--text {
+  border: none;
+  background: transparent;
+  color: var(--color-primary);
+  padding: 0;
+}
+
+.button--text:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--color-accent);
+}
+
+/* =========================================================
+   INPUTS BASE (BUSCADOR EDITORIAL)
+   ========================================================= */
+
+input,
+textarea,
+select {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  padding: 0.75rem;
+
+  border: 1px solid var(--color-border);
+  background: var(--color-background-soft);
+  color: var(--color-text);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+/* =========================================================
+   RESPONSIVE BASICO
+   ========================================================= */
+
+@media (max-width: 768px) {
+  body {
+    font-size: 15px;
+  }
+
+  h1 {
+    font-size: 2.3rem;
+  }
+}
