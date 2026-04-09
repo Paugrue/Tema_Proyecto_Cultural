@@ -10,17 +10,34 @@ import Pages from '@/pages/Pages.vue'
 const routes = [
   { path: '/', redirect: '/inicio' },
   { path: '/inicio', name: 'Inicio', component: Inicio },
+
+  // RECORDS
   { path: '/record', name: 'RecordList', component: RecordList },
   { path: '/record/:id', name: 'RecordDetail', component: RecordDetail, props: true },
+
+  // COLLECTIONS
   { path: '/collection', name: 'CollectionList', component: CollectionList },
   { path: '/collection/:id', name: 'CollectionDetail', component: CollectionDetail, props: true },
+
+  // PAGES
   { path: '/pages', name: 'Pages', component: Pages },
+
+  // ✅ SEARCH (redirige correctamente sin usar Search.vue)
+  {
+    
+  path: '/search',
+  name: 'Search',
+  component: () => import('@/pages/Search.vue')
+
+  }
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior() { return { top: 0, behavior: 'smooth' } }
+  scrollBehavior () {
+    return { top: 0, behavior: 'smooth' }
+  }
 })
 
 export default router

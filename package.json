@@ -3,17 +3,16 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-
   "engines": {
     "node": "20.x"
   },
-
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mdi/font": "^7.4.47",
     "axios": "^1.13.5",
     "vue": "^3.5.28",
     "vue-router": "^4.6.4",

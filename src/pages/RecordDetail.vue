@@ -1,6 +1,6 @@
 <template>
   <PageLayout>
-    <v-btn to="/record" variant="text" prepend-icon="mdi-arrow-left" class="mb-4">
+    <v-btn :to="{ path: '/record', query: route.query }" variant="text" prepend-icon="mdi-arrow-left" class="mb-4">
       Volver al listado
     </v-btn>
 
@@ -16,7 +16,12 @@
       <!-- IMAGEN -->
       <v-col cols="12" md="6">
         <v-card flat class="rounded-xl overflow-hidden border">
-          <v-img :src="record.imageDisplay" height="550" cover class="bg-grey-lighten-3" />
+          <v-img
+            :src="record.imageDisplay || '/placeholder.png'"
+            height="550"
+            cover
+            class="bg-grey-lighten-3"
+          />
         </v-card>
       </v-col>
 
@@ -24,17 +29,16 @@
       <v-col cols="12" md="6">
         <div class="pa-md-6">
 
-          <!-- TÍTULO -->
-          <h1 class="text-h3 font-weight-bold mb-2">{{ record.displayTitle }}</h1>
+          <h1 class="text-h3 font-weight-bold mb-2">
+            {{ record.displayTitle }}
+          </h1>
 
-          <!-- COLECCIONES -->
           <div v-if="record.cleanCollections" class="text-overline text-primary mb-6">
             {{ record.cleanCollections }}
           </div>
 
           <v-divider class="mb-6"></v-divider>
 
-          <!-- ⭐⭐ METADATOS (IGUAL QUE EN TU IMAGEN) ⭐⭐ -->
           <div class="metadata-block mb-10">
             <h2 class="metadata-header">Metadatos</h2>
 
@@ -61,10 +65,6 @@
             </div>
           </div>
 
-          <!-- DESCRIPCIÓN GENERAL -->
-          <div class="text-body-1 text-grey-darken-2" style="line-height: 1.8;">
-            {{ record.displayDescription }}
-          </div>
         </div>
       </v-col>
     </v-row>
@@ -77,11 +77,23 @@
 
       <v-row>
         <v-col v-for="r in relatedRecords" :key="r.id" cols="12" sm="6" md="3">
-          <v-card flat class="related-card" @click="navigateToRecord(r.id)">
-            <v-img :src="r.imageDisplay" height="220" cover class="rounded-lg mb-3 bg-grey-lighten-2" />
-            <v-card-title class="pa-0 text-body-2 font-weight-bold line-clamp-1">
+          <v-card
+            flat
+            class="related-card pa-4 d-flex flex-column ga-3"
+            @click="navigateToRecord(r.id)"
+          >
+
+            <v-img
+              :src="r.imageDisplay || '/placeholder.png'"
+              height="200"
+              cover
+              class="rounded-lg bg-grey-lighten-2"
+            />
+
+            <div class="related-title">
               {{ r.displayTitle }}
-            </v-card-title>
+            </div>
+
           </v-card>
         </v-col>
       </v-row>
@@ -94,74 +106,53 @@ import { ref, onMounted, watch } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import PageLayout from "@/components/PageLayout.vue"
 import api from "@/services/api"
+import { normalizeRecord } from "@/utils/normalizeRecord"
 
 const route = useRoute()
 const router = useRouter()
-const API_BASE = "https://arcadium.cluster24.libnamic.eu"
 
 const record = ref({})
 const relatedRecords = ref([])
 const loading = ref(true)
 
-// Función que limpia textos complejos
-function getCleanText(item, fieldName) {
-  const meta = item.metadata_fields || {};
-  const field = meta[fieldName] || item[fieldName];
-
-  if (!field) return "";
-
-  if (typeof field === "object") {
-    const target = Array.isArray(field) ? field[0] : field;
-    return target.value || target["@value"] || "";
-  }
-
-  return field;
-}
-
-function normalizeRecord(r) {
-  let img = r.preview || r.thumbnail || r.image || "/placeholder.png";
-  if (img !== "/placeholder.png" && !img.startsWith("http")) {
-    img = `${API_BASE}${img.startsWith("/") ? "" : "/"}${img}`;
-  }
-
-  const title = getCleanText(r, "dcterms:title") || r.title || "Sin título";
-  const author = getCleanText(r, "dcterms:creator");
-  const year = getCleanText(r, "dcterms:date");
-  const desc = getCleanText(r, "dcterms:description") || r.description || "Sin descripción detallada.";
-
-  let rawCols = r.collections_titles || r.collections || "";
-  let cleanCols = Array.isArray(rawCols)
-    ? rawCols.join(" • ")
-    : String(rawCols).split(",").join(" • ");
-
-  return {
-    ...r,
-    imageDisplay: img,
-    displayTitle: title,
-    displayAuthor: author,
-    displayYear: year,
-    displayDescription: desc,
-    cleanCollections: cleanCols
-  };
-}
-
 const loadData = async () => {
   loading.value = true
+
   try {
-    const { data: recData } = await api.getRecord(route.params.id)
+    const res = await api.getRecord(route.params.id)
+
+    const recData =
+      res.data?.data ||
+      res.data?.item ||
+      res.data
+
     record.value = normalizeRecord(recData)
 
-    if (recData.collections?.length) {
-      const { data: relatedData } = await api.getRecords({
+    if (recData?.collections?.length) {
+      const relatedRes = await api.getRecords({
         limit: 4,
-        filters: JSON.stringify([
-          { field: "collections", operator: "in", value: recData.collections },
-          { field: "id", operator: "ne", value: [recData.id] }
-        ])
+        filters: [
+          {
+            field: "collections",
+            operator: "in",
+            value: recData.collections
+          },
+          {
+            field: "id",
+            operator: "ne",
+            value: recData.id
+          }
+        ]
       })
-      const items = relatedData?.data || relatedData?.items || []
+
+      const items =
+        relatedRes.data?.data ||
+        relatedRes.data?.items ||
+        []
+
       relatedRecords.value = items.map(normalizeRecord)
     }
+
   } catch (e) {
     console.error(e)
   } finally {
@@ -240,12 +231,18 @@ watch(() => route.params.id, loadData)
    ========================================================= */
 
 .related-card {
+  background-color: #E6C08E !important;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+
   cursor: pointer;
+  padding: 16px;
+
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .related-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
 }
 </style>

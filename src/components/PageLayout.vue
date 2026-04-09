@@ -1,7 +1,9 @@
 <template>
   <div>
+    <!-- HERO / CABECERA -->
     <Hero />
 
+    <!-- BARRA DE BÚSQUEDA -->
     <section class="page-search-wrap">
       <div class="page-search-inner">
         <SearchBar
@@ -14,6 +16,7 @@
       </div>
     </section>
 
+    <!-- CONTENIDO DE LA PÁGINA -->
     <main class="page-container">
       <slot />
     </main>
@@ -29,7 +32,7 @@ import SearchBar from '@/components/SearchBar.vue'
 /* PROPS */
 const props = defineProps({
   fields: { type: Array, default: () => [] },
-  collections: { type: Array, default: () => [] }, // Debe contener objetos {id, title}
+  collections: { type: Array, default: () => [] } // Debe contener objetos {id, title}
 })
 
 const router = useRouter()
@@ -44,7 +47,7 @@ const fieldsList = computed(() =>
         { title: 'Autor', value: 'author' },
         { title: 'Fecha', value: 'date' },
         { title: 'Descripción', value: 'description' },
-        { title: 'Colección', value: 'collections' } // necesario para AdvancedSearchDialog
+        { title: 'Colección', value: 'collections' }
       ]
 )
 
@@ -73,80 +76,86 @@ const advancedDefaults = computed(() => {
     combine: route.query.combine || 'AND',
     rules: rules,
     sortBy: route.query.sortBy || 'default',
-    sortDir: route.query.sortDir || 'asc',
+    sortDir: route.query.sortDir || 'asc'
   }
 })
 
-/* BÚSQUEDA BÁSICA */
-function onBasicSearch(q) {
-  const queryTerm = q?.trim() || undefined
 
-  router.push({
-    path: '/record',
-    query: {
-      q: queryTerm,
-      page: 1
-    }
-  })
-}
-
-/* BÚSQUEDA AVANZADA */
+/* =========================
+   BÚSQUEDA AVANZADA
+========================= */
 function onAdvancedSearch(payload) {
-  const goTo =
-    payload.scope === 'collections'
-      ? '/collection'
-      : '/record'
+  const { scope, query, combine, rules } = payload
 
-  const query = {
-    q: payload.query?.trim() || undefined,
-    scope: payload.scope,
-    combine: payload.combine,
-    rules: payload.rules?.length
-      ? JSON.stringify(payload.rules)
-      : undefined,
-    sortBy: payload.sortBy || undefined,
-    sortDir: payload.sortDir || undefined,
-    page: 1,
+  function onAdvancedSearch(payload) {
+  const { scope, query, combine, rules } = payload
+
+  // ✅ Si el usuario está en /collection, ahí se queda
+  const isCollectionPage = route.path.startsWith('/collection')
+  const targetPath = isCollectionPage ? '/collection' : '/record'
+
+  const queryParams = {
+    q: query?.trim() || undefined,
+    combine,
+    rules: rules?.length ? JSON.stringify(rules) : undefined,
+    scope, // seguimos pasando el scope
+    page: 1
   }
 
-  // Limpieza automática de undefined
-  Object.keys(query).forEach(key => {
-    if (query[key] === undefined) delete query[key]
+  Object.keys(queryParams).forEach(key => {
+    if (queryParams[key] == null) delete queryParams[key]
   })
 
   router.push({
-    path: goTo,
-    query
+    path: targetPath,
+    query: queryParams
   })
 }
+
+  const queryParams = {
+    q: query?.trim() || undefined,
+    combine,
+    rules: rules?.length ? JSON.stringify(rules) : undefined,
+    scope,
+    page: 1
+  }
+
+  // Limpieza de parámetros vacíos
+  Object.keys(queryParams).forEach(key => {
+    if (queryParams[key] == null) {
+      delete queryParams[key]
+    }
+  })
+
+  router.push({
+    path: targetPath,
+    query: queryParams
+  })
+}
+
 </script>
 
 <style scoped>
 /* CONTENEDOR PRINCIPAL DE PÁGINA */
-
 .page-container {
   max-width: 1100px;
   margin: 0 auto;
   padding: 32px 24px;
 }
 
-/* BLOQUE DE BÚSQUEDA DE PÁGINA */
-/* Separación clara respecto a headers y contenido */
-
+/* BLOQUE DE BÚSQUEDA */
 .page-search-wrap {
   width: 100%;
   margin: 24px 0 32px;
 }
 
-/* CONTENEDOR INTERNO (ANCHURA AMPLIA CONTROLADA) */
-
+/* CONTENEDOR INTERNO */
 .page-search-inner {
   max-width: 1400px;
   margin: 0 auto;
 }
 
 /* RESPONSIVE */
-
 @media (max-width: 768px) {
   .page-container {
     padding: 24px 20px;

@@ -1,22 +1,32 @@
 <template>
   <div class="search-section">
     <div class="search-box">
+
       <v-text-field
         v-model="search"
-        placeholder="Buscar registros..."
+        placeholder="Buscar registros, colecciones..."
         variant="outlined"
         density="comfortable"
         hide-details
         prepend-inner-icon="mdi-magnify"
         class="search-input"
-        @keydown.enter.prevent="onBasicSearch"
+        @keyup.enter="onBasicSearch"
       />
 
-      <v-btn class="search-btn" @click="onBasicSearch">
+      <v-btn
+        class="search-btn"
+        color="primary"
+        @click="onBasicSearch"
+      >
         Buscar
       </v-btn>
 
-      <v-btn variant="text" class="advanced-btn" @click="advancedOpen = true">
+      <v-btn
+        variant="text"
+        class="advanced-btn"
+        color="primary"
+        @click="advancedOpen = true"
+      >
         Avanzada
       </v-btn>
     </div>
@@ -24,7 +34,7 @@
     <AdvancedSearchDialog
       v-model="advancedOpen"
       :fields="fields"
-      :collections="collectionsForDialog"
+      :collections="collectionOptions"
       :defaults="defaults"
       @do-advanced-search="onAdvanced"
     />
@@ -33,22 +43,49 @@
 
 <script setup>
 import { ref, watch, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import AdvancedSearchDialog from './AdvancedSearchDialog.vue'
+
+/* ─────────────────────────────────────────────
+   Props y eventos (JS puro)
+───────────────────────────────────────────── */
 
 const props = defineProps({
   fields: { type: Array, default: () => [] },
-  defaults: Object,
-  collections: { type: Array, default: () => [] } // lista de colecciones {id, title}
+  collections: { type: Array, default: () => [] },
+  defaults: { type: Object, default: () => ({}) }
 })
 
-const emit = defineEmits(['do-basic-search', 'do-advanced-search'])
+const emit = defineEmits([
+  'doBasicSearch',
+  'doAdvancedSearch'
+])
 
 const route = useRoute()
+const router = useRouter()
+
 const search = ref('')
 const advancedOpen = ref(false)
 
-// sincroniza input con query param
+/* ─────────────────────────────────────────────
+   Normalización de colecciones
+───────────────────────────────────────────── */
+
+const collectionOptions = computed(() => {
+  if (!props.collections.length) return []
+
+  return props.collections
+    .filter(c => c.id != null && (c.title || c.name))
+    .map(c => ({
+      id: c.id,
+      title: c.title || c.name || 'Sin título'
+    }))
+})
+
+/* ─────────────────────────────────────────────
+   Sincronizar input con ?q de la URL
+───────────────────────────────────────────── */
+
 watch(
   () => route.query.q,
   val => {
@@ -57,26 +94,49 @@ watch(
   { immediate: true }
 )
 
-// envía búsqueda básica
+/* ─────────────────────────────────────────────
+   Búsqueda básica
+───────────────────────────────────────────── */
 function onBasicSearch() {
-  emit('do-basic-search', search.value)
+  const q = search.value.trim()
+  if (!q) return
+
+  router.push({
+    path: '/search',
+    query: {
+      q,
+      scope: 'all', 
+      page: 1
+    }
+  })
 }
 
-// envía búsqueda avanzada
+/* ─────────────────────────────────────────────
+   Búsqueda avanzada
+───────────────────────────────────────────── */
+
 function onAdvanced(payload) {
-  emit('do-advanced-search', payload)
+  const query = {
+    q: payload.query?.trim() || undefined,
+    scope: payload.scope,
+    combine: payload.combine,
+    page: 1
+  }
+
+  if (payload.rules?.length) {
+    query.rules = JSON.stringify(payload.rules)
+  }
+
+  // Limpiar undefined / null
+  Object.keys(query).forEach(k => {
+    if (query[k] == null) delete query[k]
+  })
+
+  router.push({ path: '/search', query })
   advancedOpen.value = false
 }
-
-// --- CORRECCIÓN IMPORTANTE ---
-// convertimos las colecciones para que el dialogo reciba {id, title} siempre
-const collectionsForDialog = computed(() =>
-  props.collections.map(c => ({
-    id: c.id,
-    title: c.title || c.name || 'Sin título'
-  }))
-)
 </script>
+
 
 <style scoped>
 /* =========================================================

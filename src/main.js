@@ -4,12 +4,14 @@ import router from './router'
 
 /* === ESTILOS EDITORIALES === */
 import '@/assets/editorial.css'
+import '@mdi/font/css/materialdesignicons.css'
 
 /* === VUETIFY === */
 import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
+import { aliases, mdi } from 'vuetify/iconsets/mdi'
 
 /* =========================================================
    VUETIFY – TEMA EDITORIAL
@@ -18,6 +20,14 @@ import * as directives from 'vuetify/directives'
 const vuetify = createVuetify({
   components,
   directives,
+
+    icons: {
+    defaultSet: 'mdi',
+    aliases,
+    sets: {
+      mdi,
+    },
+  },
 
   theme: {
     defaultTheme: 'editorialTheme',
@@ -63,6 +73,8 @@ const vuetify = createVuetify({
     },
   },
 })
+
+
 
 /* =========================================================
    APP

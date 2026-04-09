@@ -16,12 +16,22 @@
   --color-background-soft: var(--color-surface);
   --color-border: rgba(0, 0, 0, 0.12);
 
-  /* ✅ NUEVO: papel envejecido */
+  /* Papel envejecido */
   --paper-aged: #F6EFD9;
 
   /* Tipografía */
   --font-serif: 'Playfair Display', 'Libre Baskerville', serif;
   --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Sistema editorial de espaciado */
+  --card-padding-sm: 12px;
+  --card-padding: 16px;
+  --card-padding-lg: 20px;
+
+  --space-xs: 6px;
+  --space-sm: 10px;
+  --space-md: 14px;
+  --space-lg: 18px;
 }
 
 
@@ -110,15 +120,14 @@ a:hover {
 
 
 /* =========================================================
-   TARJETAS EDITORIALES (FIX DEFINITIVO LIMPIO)
+   TARJETAS EDITORIALES
    ========================================================= */
 
 .v-card.record-card {
   width: 100%;
   cursor: pointer;
 
-  background-color: #E6C08E !important; /* 🎨 fondo editorial */
-
+  background-color: #E6C08E !important;
   border: 1px solid rgba(0, 0, 0, 0.18);
   border-radius: 12px;
   overflow: hidden;
@@ -128,9 +137,8 @@ a:hover {
     transform 0.25s ease,
     box-shadow 0.25s ease;
 
-  /* ✅ tipografía base */
   font-family: var(--font-sans);
-  color: rgba(0, 0, 0, 0.9); /* 🔥 texto negro legible */
+  color: rgba(0, 0, 0, 0.9);
 }
 
 .v-card.record-card:hover {
@@ -138,7 +146,7 @@ a:hover {
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08);
 }
 
-/* ✅ Neutralizar SOLO lo necesario (no todo *) */
+/* Neutralizar fondos internos */
 .v-card.record-card .v-card-item,
 .v-card.record-card .v-card-title,
 .v-card.record-card .v-card-text,
@@ -146,37 +154,12 @@ a:hover {
   background-color: transparent !important;
 }
 
-
-/* TIPOGRAFÍA EDITORIAL UNIFICADA DENTRO DE TARJETAS */
-.record-card {
-  font-family: var(--font-sans) !important;
-  color: rgba(0,0,0,0.95) !important; /* texto negro base */
+/* Padding editorial unificado */
+.v-card.record-card .v-card-item,
+.v-card.record-card .v-card-text {
+  padding: var(--card-padding-lg) !important;
 }
 
-/* TÍTULOS ESPECÍFICOS */
-.record-card .v-card-title,
-.record-card .v-card-subtitle,
-.record-card .v-card-text,
-.record-card .v-card-item,
-.record-card .record-title,
-.record-card .record-meta {
-  font-family: inherit !important; /* hereda sans o serif según tu elección */
-  color: inherit !important;       /* hereda negro */
-}
-
-.record-card .record-title {
-  font-family: var(--font-serif) !important;
-  font-size: 18px !important;
-  font-weight: 500;
-  line-height: 1.3;
-}
-
-/* METADATOS */
-.record-card .record-meta {
-  font-family: var(--font-sans) !important;
-  font-size: 13px !important;
-  color: rgba(0,0,0,0.65) !important;
-}
 
 /* =========================================================
    IMÁGENES
@@ -189,9 +172,17 @@ a:hover {
   object-fit: cover;
 }
 
+/* Imagen con bleed editorial */
+.record-card .record-image {
+  margin: calc(var(--card-padding-lg) * -1);
+  margin-bottom: var(--space-md);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
 
 /* =========================================================
-   CONTENIDO
+   CONTENIDO EDITORIAL
    ========================================================= */
 
 .record-title {
@@ -199,15 +190,21 @@ a:hover {
   font-size: 18px;
   font-weight: 500;
   line-height: 1.3;
-  margin: 16px 16px 6px;
-  color: var(--color-heading);
+  margin: 0 0 4px; /* ✅ más compacto */
+  color: rgba(0, 0, 0, 0.95);
 }
 
 .record-meta {
   font-family: var(--font-sans);
   font-size: 13px;
-  color: rgba(30, 30, 30, 0.6);
-  margin: 0 16px 20px;
+  color: rgba(0, 0, 0, 0.65);
+  margin: 0;
+  padding-top: 0; /* ✅ sin separación innecesaria */
+}
+
+/* Ritmo vertical SOLO después del subtítulo */
+.record-card .record-meta + * {
+  margin-top: var(--space-md);
 }
 
 
@@ -286,7 +283,6 @@ a:hover {
 }
 
 
-
 /* =========================================================
    RESPONSIVE
    ========================================================= */
@@ -299,4 +295,32 @@ a:hover {
   .record-title {
     font-size: 16px;
   }
+
+  .v-card.record-card .v-card-item,
+  .v-card.record-card .v-card-text {
+    padding: var(--card-padding);
+  }
+
+/* =========================================================
+   NUEVOS
+   ========================================================= */
+.v-btn--variant-text {
+  background: transparent !important;
+}
+
+.v-btn--variant-text .v-icon {
+  color: inherit;
+}
+
+.v-btn--icon {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.v-icon {
+  font-family: "Material Design Icons" !important;
+  font-size: 20px !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
 }
