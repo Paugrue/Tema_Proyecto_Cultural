@@ -23,15 +23,18 @@ export function normalizeRecord(record = {}) {
         const title = m?.[1] || "Sin título";
         const url = m?.[2] || "";
 
+        const normalizedUrl = normalizeImage(url);
+
         return {
           id,
           title,
-          thumbnail: normalizeImage(url),
+          thumbnail: normalizedUrl,
 
-          // 🔥 FIX IMPORTANTE: evitar crash
-          full: typeof url === "string" && url.includes("?")
-            ? url.split("&size=")[0]
-            : url
+          // 👇 IMPORTANTE: NO modificar la URL
+          full: normalizedUrl,
+
+          // opcional: para debug
+          rawUrl: url
         };
       })
     : [];
