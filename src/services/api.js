@@ -1,25 +1,49 @@
-// src/services/api.js
 import axios from 'axios'
 
-
-// Antes: baseURL: 'https://arcadium.cluster24.libnamic.eu/api/glam'
-// Ahora:
 const apiClient = axios.create({
-baseURL: '/api-proxy/api/glam',
-timeout: 10000,
-headers: {
-Accept: 'application/json'
-}
+  baseURL: '/api-proxy/api/glam',
+  timeout: 10000,
+  headers: {
+    Accept: 'application/json'
+  }
 })
 
 export default {
-  // ---------- RECORDS ----------
+  // =========================
+  // RECORDS
+  // =========================
+
   getRecords(params = {}) {
     return apiClient.get('/record', { params })
   },
 
   getRecord(id, params = {}) {
-    return apiClient.get(`/record/${id}`, { params })
+    return apiClient.get(`/record/${id}`, {
+      params: {
+        with_labels: 1,
+        with_thumbnails: 1,
+        fields: [
+          'id',
+          'title',
+          'description',
+          'thumbnail',
+          'preview',
+
+          // MEDIA 
+          'media_items',
+
+          // METADATOS
+          'metadata_fields',
+          'canonical_joined_metadata',
+          'joined_metadata',
+
+          // opcional pero útil
+          'collections',
+          'collections_titles'
+        ].join(','),
+        ...params
+      }
+    })
   },
 
   getRecordById(id, params = {}) {
@@ -50,7 +74,10 @@ export default {
     })
   },
 
-  // ---------- COLLECTIONS ----------
+  // =========================
+  // COLLECTIONS
+  // =========================
+
   getCollections(params = {}) {
     return apiClient.get('/collection', { params })
   },
@@ -59,9 +86,23 @@ export default {
     return apiClient.get(`/collection/${id}`, {
       params: {
         with_labels: 1,
-        fields:
-          'id,title,description,thumbnail,joined_metadata,canonical_joined_metadata,metadata_fields_order,children',
         with_thumbnails: 1,
+        fields: [
+          'id',
+          'title',
+          'description',
+          'thumbnail',
+
+          // 🔥 METADATOS
+          'metadata_fields',
+          'canonical_joined_metadata',
+          'joined_metadata',
+
+          // RELACIONES
+          'children',
+          'media_items'
+        ].join(','),
+
         ...params,
       },
     })
@@ -73,7 +114,10 @@ export default {
     })
   },
 
-  // ---------- MEDIA ----------
+  // =========================
+  // MEDIA
+  // =========================
+
   getMedia(params = {}) {
     return apiClient.get('/media', { params })
   },
@@ -95,7 +139,10 @@ export default {
     return apiClient.get(`/media/${id}`, { params })
   },
 
-  // ---------- ONTOLOGY ----------
+  // =========================
+  // ONTOLOGY
+  // =========================
+
   getOntology(params = {}) {
     return apiClient.get('/ontology', { params })
   },

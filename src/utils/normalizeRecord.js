@@ -1,80 +1,47 @@
-const API_BASE = "https://arcadium.cluster24.libnamic.eu"
+const API_BASE = "https://arcadium.cluster24.libnamic.eu";
 
-/**
- * Extrae texto de estructuras RDF / arrays / objetos mixtos
- */
-function getMetaValue(field) {
-  if (!field) return ""
-
-  if (Array.isArray(field)) {
-    return field?.[0]?.["@value"] || field?.[0]?.value || ""
-  }
-
-  if (typeof field === "object") {
-    return field["@value"] || field.value || ""
-  }
-
-  return field
-}
-
-/**
- * Normaliza URL de imagen
- */
 function normalizeImage(img) {
-  if (!img) return null
-  if (typeof img !== "string") return null
+  if (!img || typeof img !== "string") return "/placeholder.png";
 
-  const clean = img.trim()
+  let cleanPath = img.trim();
 
-  if (!clean || clean === "/placeholder.png") return null
+  if (cleanPath.startsWith("http")) return cleanPath;
 
-  if (clean.startsWith("http")) return clean
+  cleanPath = cleanPath.startsWith("/")
+    ? cleanPath.substring(1)
+    : cleanPath;
 
-  return `${API_BASE}${clean.startsWith("/") ? "" : "/"}${clean}`
+  return `${API_BASE}/${cleanPath}`;
 }
 
-/**
- * NORMALIZADOR PRINCIPAL
- */
 export function normalizeRecord(record = {}) {
-  const meta = record.metadata_fields || {}
+  const rawMedia = record.media_items || record.media || [];
 
-  const title = getMetaValue(meta["dcterms:title"] || record.title)
-  const author = getMetaValue(meta["dcterms:creator"])
-  const year = getMetaValue(meta["dcterms:date"])
-  const description =
-    getMetaValue(meta["dcterms:description"]) || record.description || ""
+  const mediaItems = Array.isArray(rawMedia)
+    ? rawMedia.map(m => {
+        const id = m?.[0] ?? null;
+        const title = m?.[1] || "Sin título";
+        const url = m?.[2] || "";
 
-  const image =
-    normalizeImage(record.preview) ||
-    normalizeImage(record.thumbnail) ||
-    normalizeImage(record.image)
+        return {
+          id,
+          title,
+          thumbnail: normalizeImage(url),
 
-  const collections =
-    record.collections_titles ||
-    record.collections ||
-    []
-
-  const cleanCollections = Array.isArray(collections)
-    ? collections.join(" • ")
-    : String(collections || "").split(",").join(" • ")
+          // 🔥 FIX IMPORTANTE: evitar crash
+          full: typeof url === "string" && url.includes("?")
+            ? url.split("&size=")[0]
+            : url
+        };
+      })
+    : [];
 
   return {
     ...record,
-
-    // identidad
-    id: record.id,
-
-    // contenido
-    displayTitle: title || "Sin título",
-    displayAuthor: author || null,
-    displayYear: year || null,
-    displayDescription: description,
-
-    // imagen (clave para tu bug)
-    imageDisplay: image,
-
-    // colecciones
-    cleanCollections
-  }
+    displayTitle: record.title || "Sin título",
+    imageDisplay: normalizeImage(record.preview || record.thumbnail),
+    mediaItems,
+    canonicalMetadata: record.canonical_joined_metadata || {},
+    joinedMetadata: record.joined_metadata || {}
+  };
 }
