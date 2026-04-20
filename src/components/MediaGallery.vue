@@ -12,14 +12,13 @@
         <v-card flat class="media-item-card bg-transparent">
           <!-- IMAGEN -->
 <v-img
-  v-if="!m.isPdf"
+  v-if="m.thumbnail"
   :src="m.thumbnail"
   height="180"
   cover
   @click="openViewer(index)"
 />
 
-<!-- PDF -->
 <div
   v-else
   style="height:180px; display:flex; align-items:center; justify-content:center; background:#eee; cursor:pointer;"

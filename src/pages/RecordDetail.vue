@@ -24,11 +24,11 @@
 
         <!-- IMAGEN -->
         <v-img
-          v-if="mainMedia && !mainMedia.isPdf"
-          :src="imageSize(mainMedia.thumbnail, 'large')"
-          height="550"
-          cover
-        />
+  v-if="mainMedia && mainMedia.thumbnail"
+  :src="imageSize(mainMedia.thumbnail, 'large')"
+  height="550"
+  cover
+/>
 
         <!-- PDF -->
         <div v-else-if="mainMedia && mainMedia.isPdf">
