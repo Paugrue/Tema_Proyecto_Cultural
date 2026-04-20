@@ -31,11 +31,13 @@ export default {
 
           // MEDIA 
           'media_items',
+          'media_items.attachment',
 
           // METADATOS
           'metadata_fields',
           'canonical_joined_metadata',
           'joined_metadata',
+      
 
           // opcional pero útil
           'collections',

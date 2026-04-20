@@ -4,21 +4,18 @@ function cleanUrl(url) {
   if (!url || typeof url !== "string") return null
 
   return url
-    .replace(/([?&])size=(small|medium|large)/g, "") // elimina size existente
-    .replace(/[?&]$/, "") // limpia restos
+    .replace(/([?&])size=(small|medium|large)/g, "")
+    .replace(/[?&]$/, "")
 }
 
 export function imageSize(url, size = "medium") {
   const base = cleanUrl(url)
   if (!base) return "/placeholder.png"
 
-  const isAbsolute = base.startsWith("http")
-
-  const finalUrl = isAbsolute
+  const finalUrl = base.startsWith("http")
     ? base
-    : `${API_BASE}/${base}`
+    : `${API_BASE}${base.startsWith("/") ? "" : "/"}${base}`
 
-  // añadimos size de forma segura
   return finalUrl.includes("?")
     ? `${finalUrl}&size=${size}`
     : `${finalUrl}?size=${size}`

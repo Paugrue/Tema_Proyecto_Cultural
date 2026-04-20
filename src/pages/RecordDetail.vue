@@ -9,29 +9,35 @@
       Volver al listado
     </v-btn>
 
+    <!-- LOADING -->
     <v-row v-if="loading">
       <v-col cols="12" class="text-center py-12">
         <v-progress-circular indeterminate color="primary" size="64" />
       </v-col>
     </v-row>
 
+    <!-- CONTENT -->
     <v-row v-else>
-      <!-- IMAGEN -->
+
+      <!-- MEDIA PRINCIPAL -->
       <v-col cols="12" md="6">
-        <v-card flat class="rounded-xl overflow-hidden border">
-          <v-img
-            :src="imageSize(record.imageDisplay, 'large')"
-            height="550"
-            contain
-            class="bg-grey-lighten-3"
-          >
-            <template #placeholder>
-              <v-row class="fill-height ma-0" align="center" justify="center">
-                <v-progress-circular indeterminate color="primary" />
-              </v-row>
-            </template>
-          </v-img>
-        </v-card>
+
+        <!-- IMAGEN -->
+        <v-img
+          v-if="mainMedia && !mainMedia.isPdf"
+          :src="imageSize(mainMedia.thumbnail, 'large')"
+          height="550"
+          cover
+        />
+
+        <!-- PDF -->
+        <div v-else-if="mainMedia && mainMedia.isPdf">
+          <canvas
+            ref="pdfCanvas"
+            style="width:100%; height:auto; display:block;"
+          ></canvas>
+        </div>
+
       </v-col>
 
       <!-- INFO -->
@@ -41,14 +47,11 @@
             {{ record.displayTitle }}
           </h1>
 
-          <div
-            v-if="record.cleanCollections"
-            class="text-overline text-primary mb-6"
-          >
+          <div v-if="record.cleanCollections" class="text-overline text-primary mb-6">
             {{ record.cleanCollections }}
           </div>
 
-          <v-divider class="mb-6"></v-divider>
+          <v-divider class="mb-6" />
 
           <div class="metadata-block mb-10">
             <h2 class="metadata-header">Información básica</h2>
@@ -73,6 +76,7 @@
           </v-window>
         </div>
       </v-col>
+
     </v-row>
 
     <!-- RELACIONADOS -->
@@ -110,12 +114,14 @@
         </v-col>
       </v-row>
     </div>
+
   </PageLayout>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue"
+import { ref, onMounted, watch, computed } from "vue"
 import { useRoute, useRouter } from "vue-router"
+import { nextTick } from "vue"
 
 import PageLayout from "@/components/PageLayout.vue"
 import MetadataViewer from "@/components/MetadataViewer.vue"
@@ -125,18 +131,101 @@ import api from "@/services/api"
 import { normalizeRecord } from "@/utils/normalizeRecord"
 import { imageSize } from "@/utils/imageSize"
 
+import * as pdfjsLib from "pdfjs-dist"
+
+// =========================
+// PDF.js setup
+// =========================
+
+import pdfWorker from "pdfjs-dist/build/pdf.worker.min?url"
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker
+// =========================
+// ROUTER
+// =========================
 const route = useRoute()
 const router = useRouter()
 
+// =========================
+// STATE
+// =========================
 const record = ref({})
 const relatedRecords = ref([])
 const loading = ref(true)
 const tab = ref("all")
 
-const onBasicSearch = (query) => {
-  router.push({ path: "/record", query: { q: query } })
+const pdfCanvas = ref(null)
+
+// =========================
+// MAIN MEDIA (IMPORTANTE)
+// =========================
+const mainMedia = computed(() => {
+  const media = record.value.mediaItems || []
+
+  const image = media.find(m => !m.isPdf)
+  return image || media[0] || null
+})
+
+// =========================
+// PDF RENDER
+// =========================
+const renderPdf = async () => {
+  try {
+    const media = mainMedia.value
+
+    console.log("📄 PDF URL:", media.full)
+
+    const pdf = await pdfjsLib.getDocument(media.full).promise
+
+    console.log("📄 PDF cargado, páginas:", pdf.numPages)
+
+    const page = await pdf.getPage(1)
+
+    const viewport = page.getViewport({ scale: 1.5 })
+
+    const canvas = pdfCanvas.value
+
+    console.log("🖼 canvas:", canvas)
+
+    if (!canvas) {
+      console.error("❌ Canvas no existe aún")
+      return
+    }
+
+    const ctx = canvas.getContext("2d")
+
+    canvas.width = viewport.width
+    canvas.height = viewport.height
+
+    const renderTask = page.render({
+      canvasContext: ctx,
+      viewport
+    })
+
+    await renderTask.promise
+
+    console.log("✅ PDF render OK")
+  } catch (err) {
+    console.error("❌ PDF ERROR DETECTADO:", err)
+  }
 }
 
+// 🔥 clave: reacciona cuando cambia el media
+watch(mainMedia, async (val) => {
+  console.log("🔥 mainMedia:", val)
+
+  if (!val?.isPdf) return
+
+  await nextTick()
+
+  console.log("🔥 rendering PDF...")
+
+  renderPdf()
+})
+
+// =========================
+// LOAD DATA
+// =========================
 const loadData = async () => {
   loading.value = true
   relatedRecords.value = []
@@ -149,9 +238,6 @@ const loadData = async () => {
 
     let items = []
 
-    // =========================
-    // 1. MISMA COLECCIÓN
-    // =========================
     if (recData?.collections?.length) {
       const col = recData.collections[0]
       const colId = typeof col === "object" ? col.id : col
@@ -167,9 +253,6 @@ const loadData = async () => {
       items = r.data?.data || r.data?.items || []
     }
 
-    // =========================
-    // 2. MISMO AUTOR
-    // =========================
     if (!items.length && recData.creator) {
       const r = await api.getRecords({
         limit: 10,
@@ -182,9 +265,6 @@ const loadData = async () => {
       items = r.data?.data || r.data?.items || []
     }
 
-    // =========================
-    // 3. RANDOM
-    // =========================
     if (!items.length) {
       const r = await api.getRecords({ limit: 10 })
       items = r.data?.data || r.data?.items || []
@@ -208,12 +288,23 @@ const loadData = async () => {
   }
 }
 
+// =========================
+// NAV
+// =========================
 const navigateToRecord = (id) => {
   router.push(`/record/${id}`)
 }
 
+const onBasicSearch = (query) => {
+  router.push({ path: "/record", query: { q: query } })
+}
+
+// =========================
+// INIT
+// =========================
 onMounted(loadData)
 watch(() => route.params.id, loadData)
+
 </script>
 
 <style scoped>

@@ -10,19 +10,23 @@
         lg="4"
       >
         <v-card flat class="media-item-card bg-transparent">
-          <v-img
-            :src="m.thumbnail"
-            height="180"
-            cover
-            class="rounded-lg bg-grey-lighten-4 mb-2 cursor-pointer elevation-1"
-            @click="openViewer(index)"
-          >
-            <template v-slot:placeholder>
-              <v-row class="fill-height ma-0" align="center" justify="center">
-                <v-progress-circular indeterminate color="primary" size="20" />
-              </v-row>
-            </template>
-          </v-img>
+          <!-- IMAGEN -->
+<v-img
+  v-if="!m.isPdf"
+  :src="m.thumbnail"
+  height="180"
+  cover
+  @click="openViewer(index)"
+/>
+
+<!-- PDF -->
+<div
+  v-else
+  style="height:180px; display:flex; align-items:center; justify-content:center; background:#eee; cursor:pointer;"
+  @click="openViewer(index)"
+>
+  📄 PDF
+</div>
 
           <div class="media-content">
             <div class="media-title-text mb-1">
@@ -31,12 +35,16 @@
 
             <div class="d-flex flex-column ga-1">
               <span class="action-link-orange cursor-pointer" @click="openViewer(index)">
-                Ver imagen
+                Ver archivo
               </span>
               
-              <a :href="m.full" download class="action-link-orange">
-                Descargar
-              </a>
+             <a
+  :href="m.full"
+  :download="m.title || 'archivo'"
+  class="action-link-orange"
+>
+  Descargar
+</a>
             </div>
           </div>
         </v-card>
@@ -58,17 +66,25 @@
 
         <v-row no-gutters align="center" justify="center" class="fill-height">
           <v-col cols="12" class="d-flex justify-center align-center fill-height">
-            <v-img
-              v-if="selectedImage"
-              :src="selectedImage.full"
-              contain
-              max-height="90vh"
-              class="ma-auto"
-            >
-              <template v-slot:placeholder>
-                <v-progress-circular indeterminate color="white" />
-              </template>
-            </v-img>
+            <!-- IMAGEN -->
+<!-- IMAGEN -->
+<v-img
+  v-if="selectedImage && !selectedImage.isPdf"
+  :src="selectedImage.full"
+  cover
+  max-height="90vh"
+>
+  <template v-slot:placeholder>
+    <v-progress-circular indeterminate color="white" />
+  </template>
+</v-img>
+
+<!-- PDF -->
+<iframe
+  v-else-if="selectedImage && selectedImage.isPdf"
+  :src="selectedImage.full"
+  style="width:100%; height:90vh; border:none;"
+></iframe>
           </v-col>
         </v-row>
 
@@ -94,6 +110,49 @@ const openViewer = (index) => {
   selectedImage.value = props.items[index];
   viewerDialog.value = true;
 };
+
+const downloadFile = async (item) => {
+  try {
+    const response = await fetch(item.full, {
+      credentials: "include"
+    })
+
+    const blob = await response.blob()
+
+    const url = window.URL.createObjectURL(blob)
+
+    const a = document.createElement("a")
+    a.href = url
+
+    // importante: añadir extensión
+    const filename = item.isPdf
+      ? (item.title?.endsWith(".pdf") ? item.title : item.title + ".pdf")
+      : item.title || "archivo"
+
+    a.download = filename
+
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+
+    window.URL.revokeObjectURL(url)
+
+  } catch (e) {
+    console.error("Error descarga:", e)
+    alert("No se pudo descargar automáticamente")
+  }
+}
+
+
+const getFileName = (item) => {
+  if (!item?.title) return "archivo"
+
+  // asegurar extensión
+  if (item.isPdf) return item.title.endsWith(".pdf") ? item.title : item.title + ".pdf"
+
+  return item.title
+}
+
 </script>
 
 <style scoped>
