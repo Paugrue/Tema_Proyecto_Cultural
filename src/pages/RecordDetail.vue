@@ -22,21 +22,26 @@
       <!-- MEDIA PRINCIPAL -->
       <v-col cols="12" md="6">
 
-        <!-- IMAGEN -->
-        <v-img
-  v-if="mainMedia && mainMedia.thumbnail"
-  :src="imageSize(mainMedia.thumbnail, 'large')"
-  height="550"
-  cover
-/>
+  <div
+  class="d-flex align-center justify-center cursor-pointer"
+  style="height:550px;"
+  @click="openMainViewer"
+>
+  <v-img
+    v-if="mainMedia && mainMedia.thumbnail"
+    :src="imageSize(mainMedia.thumbnail, 'large')"
+    max-height="100%"
+    max-width="100%"
+    contain
+  />
 
-        <!-- PDF -->
-        <div v-else-if="mainMedia && mainMedia.isPdf">
-          <canvas
-            ref="pdfCanvas"
-            style="width:100%; height:auto; display:block;"
-          ></canvas>
-        </div>
+  <div
+    v-else
+    class="d-flex align-center justify-center fill-height"
+  >
+    <v-icon size="128">mdi-file-image-outline</v-icon>
+  </div>
+</div>
 
       </v-col>
 
@@ -74,6 +79,7 @@
               <MediaGallery :items="record.mediaItems" />
             </v-window-item>
           </v-window>
+
         </div>
       </v-col>
 
@@ -115,13 +121,65 @@
       </v-row>
     </div>
 
+    <!-- VIEWER -->
+    <v-dialog
+      v-model="mainViewer"
+      fullscreen
+      transition="dialog-bottom-transition"
+    >
+      <v-card class="bg-black">
+
+        <v-toolbar flat color="transparent">
+          <v-spacer />
+          <v-btn icon="mdi-close" color="white" @click="mainViewer = false" />
+        </v-toolbar>
+
+        <v-btn
+          icon="mdi-chevron-left"
+          class="position-absolute"
+          style="left:10px; top:50%; z-index:10;"
+          color="white"
+          @click="prevMedia"
+        />
+
+        <v-btn
+          icon="mdi-chevron-right"
+          class="position-absolute"
+          style="right:10px; top:50%; z-index:10;"
+          color="white"
+          @click="nextMedia"
+        />
+
+        <v-row no-gutters align="center" justify="center" class="fill-height">
+          <v-col cols="12" class="d-flex justify-center align-center">
+
+            <!-- IMAGEN -->
+            <v-img
+              v-if="mediaList[currentIndex] && !mediaList[currentIndex].isPdf"
+              :src="mediaList[currentIndex].full"
+              max-height="90vh"
+              contain
+            />
+
+            <!-- PDF -->
+            <iframe
+              v-else-if="mediaList[currentIndex] && mediaList[currentIndex].isPdf"
+              :src="mediaList[currentIndex].full"
+              style="width:100%; height:90vh; border:none;"
+            />
+
+          </v-col>
+        </v-row>
+
+      </v-card>
+    </v-dialog>
+
   </PageLayout>
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from "vue"
+import { ref, onMounted, watch, computed, nextTick } from "vue"
 import { useRoute, useRouter } from "vue-router"
-import { nextTick } from "vue"
 
 import PageLayout from "@/components/PageLayout.vue"
 import MetadataViewer from "@/components/MetadataViewer.vue"
@@ -131,15 +189,6 @@ import api from "@/services/api"
 import { normalizeRecord } from "@/utils/normalizeRecord"
 import { imageSize } from "@/utils/imageSize"
 
-import * as pdfjsLib from "pdfjs-dist"
-
-// =========================
-// PDF.js setup
-// =========================
-
-import pdfWorker from "pdfjs-dist/build/pdf.worker.min?url"
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker
 // =========================
 // ROUTER
 // =========================
@@ -154,138 +203,60 @@ const relatedRecords = ref([])
 const loading = ref(true)
 const tab = ref("all")
 
-const pdfCanvas = ref(null)
-
 // =========================
-// MAIN MEDIA (IMPORTANTE)
+// MEDIA
 // =========================
 const mainMedia = computed(() => {
   const media = record.value.mediaItems || []
-
-  const image = media.find(m => !m.isPdf)
-  return image || media[0] || null
+  return media.find(m => !m.isPdf) || media[0] || null
 })
 
-// =========================
-// PDF RENDER
-// =========================
-const renderPdf = async () => {
-  try {
-    const media = mainMedia.value
-
-    console.log("📄 PDF URL:", media.full)
-
-    const pdf = await pdfjsLib.getDocument(media.full).promise
-
-    console.log("📄 PDF cargado, páginas:", pdf.numPages)
-
-    const page = await pdf.getPage(1)
-
-    const viewport = page.getViewport({ scale: 1.5 })
-
-    const canvas = pdfCanvas.value
-
-    console.log("🖼 canvas:", canvas)
-
-    if (!canvas) {
-      console.error("❌ Canvas no existe aún")
-      return
-    }
-
-    const ctx = canvas.getContext("2d")
-
-    canvas.width = viewport.width
-    canvas.height = viewport.height
-
-    const renderTask = page.render({
-      canvasContext: ctx,
-      viewport
-    })
-
-    await renderTask.promise
-
-    console.log("✅ PDF render OK")
-  } catch (err) {
-    console.error("❌ PDF ERROR DETECTADO:", err)
-  }
-}
-
-// 🔥 clave: reacciona cuando cambia el media
-watch(mainMedia, async (val) => {
-  console.log("🔥 mainMedia:", val)
-
-  if (!val?.isPdf) return
-
-  await nextTick()
-
-  console.log("🔥 rendering PDF...")
-
-  renderPdf()
-})
+const mediaList = computed(() => record.value.mediaItems || [])
+const currentIndex = ref(0)
+const mainViewer = ref(false)
 
 // =========================
-// LOAD DATA
+// LOAD
 // =========================
 const loadData = async () => {
   loading.value = true
-  relatedRecords.value = []
-
   try {
     const res = await api.getRecord(route.params.id)
-    const recData = res.data?.data || res.data?.item || res.data || {}
-
+    const recData = res.data?.data || res.data || {}
     record.value = normalizeRecord(recData)
 
-    let items = []
-
-    if (recData?.collections?.length) {
-      const col = recData.collections[0]
-      const colId = typeof col === "object" ? col.id : col
-
-      const r = await api.getRecords({
-        limit: 10,
-        filters: [
-          { field: "collections", operator: "in", value: [colId] },
-          { field: "id", operator: "ne", value: recData.id }
-        ]
-      })
-
-      items = r.data?.data || r.data?.items || []
-    }
-
-    if (!items.length && recData.creator) {
-      const r = await api.getRecords({
-        limit: 10,
-        filters: [
-          { field: "creator", operator: "like", value: recData.creator },
-          { field: "id", operator: "ne", value: recData.id }
-        ]
-      })
-
-      items = r.data?.data || r.data?.items || []
-    }
-
-    if (!items.length) {
-      const r = await api.getRecords({ limit: 10 })
-      items = r.data?.data || r.data?.items || []
-    }
-
-    const seen = new Set()
-
-    relatedRecords.value = items
-      .map(normalizeRecord)
-      .filter(r => {
-        if (!r?.id || seen.has(r.id)) return false
-        seen.add(r.id)
-        return true
-      })
-      .slice(0, 4)
-
+    relatedRecords.value = []
   } catch (e) {
     console.error("RecordDetail error:", e)
   } finally {
     loading.value = false
   }
+}
+
+// =========================
+// VIEWER
+// =========================
+const openMainViewer = () => {
+  currentIndex.value = mediaList.value.findIndex(
+    m => m.id === mainMedia.value?.id
+  )
+
+  if (currentIndex.value < 0) currentIndex.value = 0
+  mainViewer.value = true
+}
+
+const nextMedia = () => {
+  currentIndex.value =
+    currentIndex.value < mediaList.value.length - 1
+      ? currentIndex.value + 1
+      : 0
+}
+
+const prevMedia = () => {
+  currentIndex.value =
+    currentIndex.value > 0
+      ? currentIndex.value - 1
+      : mediaList.value.length - 1
 }
 
 // =========================
@@ -304,7 +275,6 @@ const onBasicSearch = (query) => {
 // =========================
 onMounted(loadData)
 watch(() => route.params.id, loadData)
-
 </script>
 
 <style scoped>
@@ -338,5 +308,15 @@ watch(() => route.params.id, loadData)
   font-size: 0.95rem;
   color: #4a3319;
   line-height: 1.3;
+}
+
+.main-media-container {
+  height: 550px;
+  width: 100%;
+  background: #f5f5f5; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 </style>

@@ -4,19 +4,30 @@ function cleanUrl(url) {
   if (!url || typeof url !== "string") return null
 
   return url
-    .replace(/([?&])size=(small|medium|large)/g, "")
+    .trim()
+    .replace(/\s/g, "")
+    .replace(/size=(small|medium|large)/g, "")
     .replace(/[?&]$/, "")
 }
 
 export function imageSize(url, size = "medium") {
-  const base = cleanUrl(url)
-  if (!base) return "/placeholder.png"
+  if (!url || typeof url !== "string") return "/placeholder.png"
 
-  const finalUrl = base.startsWith("http")
-    ? base
-    : `${API_BASE}${base.startsWith("/") ? "" : "/"}${base}`
+  // 🔥 SI ES PROXY → NO TOCAR
+  if (url.startsWith("/api-proxy")) {
+    return url
+  }
 
-  return finalUrl.includes("?")
-    ? `${finalUrl}&size=${size}`
-    : `${finalUrl}?size=${size}`
+  let finalUrl = url.trim()
+
+  // solo añadir base si es relativa REAL (no proxy)
+  if (!finalUrl.startsWith("http") && !finalUrl.startsWith("/api")) {
+    finalUrl = `${API_BASE}${finalUrl.startsWith("/") ? "" : "/"}${finalUrl}`
+  }
+
+  // no duplicar size
+  if (finalUrl.includes("size=")) return finalUrl
+
+  const joinChar = finalUrl.includes("?") ? "&" : "?"
+  return `${finalUrl}${joinChar}size=${size}`
 }

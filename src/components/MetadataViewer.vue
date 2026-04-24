@@ -4,15 +4,32 @@
       <div class="metadata-label">{{ row.label }}</div>
       <div class="metadata-value">
         <div v-for="(v, j) in row.values" :key="j">
-          <span v-if="v.type === 'text'">{{ v.value }}</span>
+          <span v-if="!v.type">{{ v }}</span>
+
+          <span v-else-if="v.type === 'text'">{{ v.value }}</span>
+
+          <a v-else-if="v.type === 'link'" :href="v.value" target="_blank">
+            {{ v.value }}
+          </a>
+
+          <router-link
+            v-else-if="v.type === 'resource' && v.value"
+            :to="`/record/${getResourceId(v)}`"
+          >
+            {{ v.label || v.value }}
+          </router-link>
           
           <a v-else-if="v.type === 'link'" :href="v.value" target="_blank" class="metadata-link">
             {{ v.value }}
           </a>
 
-          <router-link v-else-if="v.type === 'resource'" :to="`/record/${v.value}`" class="metadata-link">
-            {{ v.label }}
-          </router-link>
+          <router-link
+          v-else-if="v.type === 'resource' && isValidRecordId(v.value)"
+          :to="{ path: `/record/${getResourceId(v)}` }"
+          class="metadata-link"
+        >
+          {{ v.label }}
+        </router-link>
         </div>
       </div>
     </div>
@@ -29,6 +46,28 @@ const props = defineProps({
 })
 
 const processed = computed(() => processMetadata(props.metadata))
+
+// =========================
+// PARA ENLACES A OTROS RECURSOS
+// =========================
+const getResourceId = (v) => {
+  if (!v?.value) return null
+
+  if (typeof v.value === "object") return v.value.id
+
+  const id = String(v.value).trim()
+
+  return /^\d+$/.test(id) ? id : null
+}
+
+const isValidRecordId = (value) => {
+  if (!value) return false
+
+  const v = typeof value === "object" ? value.id : value
+
+  // solo números simples (tu sistema parece usarlos así)
+  return /^\d+$/.test(String(v).trim())
+}
 </script>
 
 <style scoped>

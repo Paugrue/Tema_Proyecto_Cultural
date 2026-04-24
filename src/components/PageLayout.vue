@@ -1,9 +1,7 @@
 <template>
   <div>
-    <!-- HERO / CABECERA -->
     <Hero />
 
-    <!-- BARRA DE BÚSQUEDA -->
     <section class="page-search-wrap">
       <div class="page-search-inner">
         <SearchBar
@@ -16,9 +14,11 @@
       </div>
     </section>
 
-    <!-- CONTENIDO DE LA PÁGINA -->
+    <!-- ✅ FIX GLOBAL LAYOUT -->
     <main class="page-container">
-      <slot />
+      <div class="page-content">
+        <slot />
+      </div>
     </main>
   </div>
 </template>
@@ -29,16 +29,14 @@ import { useRouter, useRoute } from 'vue-router'
 import Hero from '@/components/Hero.vue'
 import SearchBar from '@/components/SearchBar.vue'
 
-/* PROPS */
 const props = defineProps({
   fields: { type: Array, default: () => [] },
-  collections: { type: Array, default: () => [] } // Debe contener objetos {id, title}
+  collections: { type: Array, default: () => [] }
 })
 
 const router = useRouter()
 const route = useRoute()
 
-/* CAMPOS DISPONIBLES PARA BÚSQUEDA */
 const fieldsList = computed(() =>
   props.fields.length
     ? props.fields
@@ -51,14 +49,15 @@ const fieldsList = computed(() =>
       ]
 )
 
-/* COLECCIONES DISPONIBLES */
 const collectionsList = computed(() =>
   Array.isArray(props.collections)
-    ? props.collections.map(c => ({ id: c.id, title: c.title || c.name || 'Sin título' }))
+    ? props.collections.map(c => ({
+        id: c.id,
+        title: c.title || c.name || 'Sin título'
+      }))
     : []
 )
 
-/* SINCRONIZAR URL → ESTADO DEL BUSCADOR */
 const advancedDefaults = computed(() => {
   let rules = []
 
@@ -66,7 +65,7 @@ const advancedDefaults = computed(() => {
     if (route.query.rules) {
       rules = JSON.parse(route.query.rules)
     }
-  } catch (e) {
+  } catch {
     rules = []
   }
 
@@ -74,23 +73,31 @@ const advancedDefaults = computed(() => {
     scope: route.query.scope || 'records',
     query: route.query.q || '',
     combine: route.query.combine || 'AND',
-    rules: rules,
+    rules,
     sortBy: route.query.sortBy || 'default',
     sortDir: route.query.sortDir || 'asc'
   }
 })
 
+/* =========================
+   SEARCH SIMPLE
+========================= */
+const onBasicSearch = (query) => {
+  router.push({
+    path: '/record',
+    query: {
+      q: query || undefined,
+      page: 1
+    }
+  })
+}
 
 /* =========================
-   BÚSQUEDA AVANZADA
+   SEARCH AVANZADO
 ========================= */
-function onAdvancedSearch(payload) {
+const onAdvancedSearch = (payload) => {
   const { scope, query, combine, rules } = payload
 
-  function onAdvancedSearch(payload) {
-  const { scope, query, combine, rules } = payload
-
-  // ✅ Si el usuario está en /collection, ahí se queda
   const isCollectionPage = route.path.startsWith('/collection')
   const targetPath = isCollectionPage ? '/collection' : '/record'
 
@@ -98,7 +105,7 @@ function onAdvancedSearch(payload) {
     q: query?.trim() || undefined,
     combine,
     rules: rules?.length ? JSON.stringify(rules) : undefined,
-    scope, // seguimos pasando el scope
+    scope,
     page: 1
   }
 
@@ -111,58 +118,40 @@ function onAdvancedSearch(payload) {
     query: queryParams
   })
 }
-
-  const queryParams = {
-    q: query?.trim() || undefined,
-    combine,
-    rules: rules?.length ? JSON.stringify(rules) : undefined,
-    scope,
-    page: 1
-  }
-
-  // Limpieza de parámetros vacíos
-  Object.keys(queryParams).forEach(key => {
-    if (queryParams[key] == null) {
-      delete queryParams[key]
-    }
-  })
-
-  router.push({
-    path: targetPath,
-    query: queryParams
-  })
-}
-
 </script>
 
 <style scoped>
-/* CONTENEDOR PRINCIPAL DE PÁGINA */
+/* =========================
+   GLOBAL LAYOUT FIX
+========================= */
+
 .page-container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 32px 24px;
+  width: 100%;
 }
 
-/* BLOQUE DE BÚSQUEDA */
+/* 🔥 CLAVE: este es el contenedor que arregla todo */
+.page-content {
+  max-width: 1200px;
+  margin: 0 auto;
+
+  /* Aire lateral global */
+  padding-left: 24px;
+  padding-right: 24px;
+
+  /* Aire vertical opcional */
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+/* =========================
+   SEARCH WRAPPER (sin cambios funcionales)
+========================= */
+
 .page-search-wrap {
   width: 100%;
-  margin: 24px 0 32px;
 }
 
-/* CONTENEDOR INTERNO */
 .page-search-inner {
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  .page-container {
-    padding: 24px 20px;
-  }
-
-  .page-search-wrap {
-    margin: 16px 0 24px;
-  }
+  width: 100%;
 }
 </style>

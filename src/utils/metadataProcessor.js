@@ -6,31 +6,35 @@ export function processMetadata(metadata = {}) {
   Object.entries(metadata).forEach(([key, meta]) => {
     if (!meta || !meta.values) return
 
-    const values = meta.values.map(v => {
-      // Prioridad 1: Texto amigable (@value)
-      const rawValue = v?.["@value"] ?? v?.value ?? v
-      const label = v?.label ?? rawValue
+    const cleanValues = Array.isArray(meta.values)
+      ? meta.values.filter(v => v !== undefined && v !== null && v !== "")
+      : []
 
-      // Si tiene @value, lo forzamos como TEXTO para ignorar la URI técnica
-      if (v?.["@value"]) {
-        return { type: "text", value: rawValue }
+    const values = cleanValues.map(v => {
+      // string directo
+      if (typeof v === "string") {
+        return { type: "text", value: v }
       }
 
-      // Si es un recurso interno (ID numérico)
-      if (v?.type === "resource" || (v?.["@id"] && !isNaN(v["@id"]))) {
-        return { 
-          type: "resource", 
-          value: v["@id"] || v.value, 
-          label: label 
+      const raw = v?.["@value"] ?? v?.value ?? v
+      const label = v?.label ?? raw
+
+      // link externo
+      if (typeof raw === "string" && raw.startsWith("http")) {
+        return { type: "link", value: raw }
+      }
+
+      // resource interno
+      if (v?.type === "resource" && v?.["@id"]) {
+        return {
+          type: "resource",
+          value: String(v["@id"]),
+          label
         }
       }
 
-      // Si es un link externo real
-      if (typeof rawValue === "string" && rawValue.startsWith("http")) {
-        return { type: "link", value: rawValue }
-      }
-
-      return { type: "text", value: label }
+      // fallback texto
+      return { type: "text", value: String(label) }
     })
 
     if (values.length) {

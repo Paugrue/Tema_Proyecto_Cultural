@@ -1,18 +1,18 @@
-const API_BASE = "https://arcadium.cluster24.libnamic.eu";
+const API_BASE = "https://arcadium.cluster24.libnamic.eu"
 
 export function normalizeRecord(record = {}) {
   const mediaItems = (record.media_items || [])
     .map(m => {
-      const att = m?.attachment;
-      if (!att) return null;
+      const att = m?.attachment
+      if (!att) return null
 
       const full = att.url
-        ? "/api-proxy" + att.url
-        : null;
+        ? API_BASE + att.url
+        : null
 
       const thumbnail = att.variants?.medium
         ? API_BASE + att.variants.medium
-        : full;
+        : full
 
       return {
         id: m.id,
@@ -21,17 +21,22 @@ export function normalizeRecord(record = {}) {
         full,
         mimetype: att.mimetype,
         isPdf: att.mimetype === "application/pdf"
-      };
+      }
     })
-    .filter(Boolean);
+    .filter(Boolean)
 
   return {
-  ...record,
-  displayTitle: record.title || "Sin título",
-  mediaItems,
+    ...record,
+    displayTitle: record.title || "Sin título",
+    mediaItems,
 
-  canonicalMetadata: record.canonical_joined_metadata || {},
-  joinedMetadata: record.joined_metadata || {},
-  imageDisplay: record.preview || record.thumbnail,
-}
+    canonicalMetadata: record.canonical_joined_metadata || {},
+    joinedMetadata: record.joined_metadata || {},
+
+    imageDisplay: record.preview
+      ? API_BASE + record.preview
+      : record.thumbnail
+        ? API_BASE + record.thumbnail
+        : null
+  }
 }
