@@ -238,7 +238,6 @@ const loadData = async () => {
     if (collections) {
       const firstCollection = collections.split(",")[0].trim()
 
-      console.log("BUSCANDO POR COLECCIÓN:", firstCollection)
 
       try {
         const relatedRes = await api.searchRecords({
@@ -247,7 +246,6 @@ const loadData = async () => {
           with_thumbnails: 1
         })
 
-        console.log("RELATED RAW:", relatedRes.data)
 
         relatedRecords.value = (relatedRes.data?.items || [])
           .map(normalizeRecord)

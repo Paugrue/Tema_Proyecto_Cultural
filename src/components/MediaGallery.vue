@@ -204,62 +204,44 @@ const getMainViewerSrc = (item) => {
 /* =========================
    DESCARGA DE ARCHIVOS
 ========================= */
-const downloadFile = async (item) => {
-  try {
-    const response = await fetch(item.full, {
-      credentials: "include"
-    })
-
-    const blob = await response.blob()
-
-    const url = window.URL.createObjectURL(blob)
-
-    const a = document.createElement("a")
-    a.href = url
-
-    // importante: añadir extensión
-    const filename = item.isPdf
-      ? (item.title?.endsWith(".pdf") ? item.title : item.title + ".pdf")
-      : item.title || "archivo"
-
-    a.download = filename
-
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-
-    window.URL.revokeObjectURL(url)
-
-  } catch (e) {
-    console.error("Error descarga:", e)
-    alert("No se pudo descargar automáticamente")
-  }
+const downloadFile = (item) => {
+  openFile(item.id)
 }
 
 const forceDownload = (item) => {
-  const url = item.full;
+  openFile(item.id, item.full)
+}
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.target = "_blank";
-  a.rel = "noopener";
+const openFile = (id, fallbackUrl = null) => {
+  const url =
+    fallbackUrl ||
+    `/api-proxy/api/glam/core/attachment/action_get/file?attachment_id=${id}`
 
-  // esto SOLO funciona si el servidor lo permite
-  a.download = item.title || "archivo";
+  const a = document.createElement("a")
+  a.href = url
 
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-};
+  // deja que el navegador decida:
+  // - descarga si el servidor lo fuerza
+  // - o abre el archivo si no
+  a.target = "_blank"
+  a.rel = "noopener noreferrer"
+
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+}
 
 const getFileName = (item) => {
-  if (!item?.title) return "archivo"
+  if (item?.title) return item.title
 
-  // asegurar extensión
-  if (item.isPdf) return item.title.endsWith(".pdf") ? item.title : item.title + ".pdf"
+  if (item?.full) {
+    const parts = item.full.split("/")
+    return parts[parts.length - 1] || "archivo"
+  }
 
-  return item.title
+  return "archivo"
 }
+
 
 </script>
 
