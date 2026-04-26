@@ -27,7 +27,6 @@
           </v-btn-toggle>
         </div>
 
-        <!-- Término general -->
         <v-text-field
           v-model="form.query"
           label="Término general"
@@ -38,13 +37,13 @@
           @keyup.enter="emitSearch"
         />
 
-        <!-- Filtros específicos -->
         <v-card variant="flat" border class="pa-4 mb-6" color="secondary">
 
           <div class="d-flex align-center mb-4 flex-wrap">
             <span class="text-subtitle-1 font-weight-bold me-4">
               Filtros específicos
             </span>
+
             <v-btn-toggle
               v-model="form.combine"
               density="compact"
@@ -71,6 +70,7 @@
                 hide-details
                 class="flex-grow-1"
                 min-width="150px"
+                @update:modelValue="() => (rule.value = null)"
               />
 
               <v-select
@@ -83,7 +83,6 @@
                 hide-details
               />
 
-              <!-- Valor -->
               <v-select
                 v-if="rule.field === 'collection_id'"
                 v-model="rule.value"
@@ -96,6 +95,7 @@
                 min-width="200px"
                 item-title="title"
                 item-value="id"
+                @update:modelValue="val => rule.value = val ? Number(val) : null"
               />
 
               <v-text-field
@@ -110,7 +110,7 @@
                 @keyup.enter="emitSearch"
               />
 
-                 <v-btn
+              <v-btn
                 icon="mdi-close"
                 variant="text"
                 density="compact"
@@ -131,6 +131,7 @@
             </v-btn>
           </div>
         </v-card>
+
       </v-card-text>
 
       <v-card-actions class="px-0 pt-4">
@@ -151,9 +152,13 @@
 <script setup>
 import { reactive, computed, watch } from 'vue'
 
-/* ─────────────────────────────────────────────
-   Props y eventos (sin tipos)
-───────────────────────────────────────────── */
+/**
+ * Props:
+ * - modelValue: apertura del diálogo
+ * - fields: campos disponibles para filtros
+ * - collections: lista de colecciones
+ * - defaults: valores iniciales del formulario
+ */
 
 const props = defineProps({
   modelValue: Boolean,
@@ -167,18 +172,10 @@ const emit = defineEmits([
   'do-advanced-search'
 ])
 
-/* ─────────────────────────────────────────────
-   Control del diálogo
-───────────────────────────────────────────── */
-
 const open = computed({
   get: () => props.modelValue,
   set: v => emit('update:modelValue', v)
 })
-
-/* ─────────────────────────────────────────────
-   Estado del formulario
-───────────────────────────────────────────── */
 
 const form = reactive({
   scope: 'records',
@@ -189,10 +186,6 @@ const form = reactive({
 
 const generateId = () =>
   Math.random().toString(36).substring(2, 9)
-
-/* ─────────────────────────────────────────────
-   Reset del formulario
-───────────────────────────────────────────── */
 
 function resetForm() {
   form.scope = props.defaults.scope || 'records'
@@ -206,7 +199,7 @@ function resetForm() {
         id: generateId(),
         field: r.field ?? null,
         operator: r.operator || 'contains',
-        value: r.value ?? ''
+        value: r.value ?? null
       })
     })
   } else {
@@ -219,10 +212,6 @@ watch(
   val => { if (val) resetForm() },
   { immediate: true }
 )
-
-/* ─────────────────────────────────────────────
-   Opciones de campos y operadores
-───────────────────────────────────────────── */
 
 const fieldOptions = computed(() => {
   const defaults = [
@@ -258,7 +247,6 @@ function getOperatorOptions(field) {
     ]
   }
 
-  // default
   return [
     { title: 'Contiene', value: 'contains' },
     { title: 'Es igual a', value: 'eq' },
@@ -275,16 +263,12 @@ const collectionSelectOptions = computed(() =>
   }))
 )
 
-/* ─────────────────────────────────────────────
-   Gestión de reglas
-───────────────────────────────────────────── */
-
 function addRule() {
   form.rules.push({
     id: generateId(),
     field: null,
     operator: 'contains',
-    value: ''
+    value: null
   })
 }
 
@@ -293,22 +277,21 @@ function removeRule(idx) {
   if (!form.rules.length) addRule()
 }
 
-/* ─────────────────────────────────────────────
-   Emitir búsqueda avanzada
-───────────────────────────────────────────── */
-
 function emitSearch() {
   const validRules = form.rules.filter(r => {
     if (!r.field) return false
     if (['isEmpty', 'notEmpty'].includes(r.operator)) return true
-    return String(r.value).trim() !== ''
+    return r.value !== null && String(r.value).trim() !== ''
   })
 
   emit('do-advanced-search', {
     scope: form.scope,
     query: form.query,
     combine: form.combine,
-    rules: validRules.map(({ id, ...r }) => r)
+    rules: validRules.map(({ id, ...r }) => ({
+      ...r,
+      value: r.field === 'collection_id' ? Number(r.value) : r.value
+    }))
   })
 
   open.value = false
@@ -316,8 +299,6 @@ function emitSearch() {
 </script>
 
 <style scoped>
-
-
 
 /* Ajustes de espaciado para los inputs */
 :deep(.v-btn-toggle) {
