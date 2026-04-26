@@ -221,11 +221,43 @@ const mainViewer = ref(false)
 const loadData = async () => {
   loading.value = true
   try {
+    // =========================
+    // RECORD PRINCIPAL
+    // =========================
     const res = await api.getRecord(route.params.id)
     const recData = res.data?.data || res.data || {}
     record.value = normalizeRecord(recData)
 
-    relatedRecords.value = []
+    // =========================
+    // RELACIONADOS
+    // =========================
+    relatedRecords.value = await loadRelated(recData)
+
+    const collections = recData.collections_titles
+
+    if (collections) {
+      const firstCollection = collections.split(",")[0].trim()
+
+      console.log("BUSCANDO POR COLECCIÓN:", firstCollection)
+
+      try {
+        const relatedRes = await api.searchRecords({
+          collection_title: firstCollection,
+          limit: 5,
+          with_thumbnails: 1
+        })
+
+        console.log("RELATED RAW:", relatedRes.data)
+
+        relatedRecords.value = (relatedRes.data?.items || [])
+          .map(normalizeRecord)
+          .filter(r => r.id !== record.value.id)
+
+      } catch (err) {
+        console.error("RELATED ERROR:", err)
+      }
+    }
+
   } catch (e) {
     console.error("RecordDetail error:", e)
   } finally {
@@ -233,6 +265,72 @@ const loadData = async () => {
   }
 }
 
+const loadRelated = async (recData) => {
+  const collections = recData.collections_titles
+
+  let items = []
+
+  try {
+    // =========================
+    // 1. BÚSQUEDA PRINCIPAL
+    // =========================
+    if (collections) {
+      const firstCollection = collections.split(",")[0].trim()
+
+      const res = await api.searchRecords({
+        collection_title: firstCollection,
+        limit: 8
+      })
+
+      items = res.data?.items || []
+    }
+
+    // quitar el actual
+    items = items.filter(r => r.id !== recData.id)
+
+    // =========================
+    // 2. FALLBACK GLOBAL (SI NO HAY SUFICIENTES)
+    // =========================
+    if (items.length < 4) {
+      const fallbackRes = await api.searchRecords({
+        limit: 8
+      })
+
+      const fallbackItems = (fallbackRes.data?.items || [])
+        .filter(r => r.id !== recData.id)
+
+      // combinar sin duplicados
+      const map = new Map()
+
+      ;[...items, ...fallbackItems].forEach(r => {
+        map.set(r.id, r)
+      })
+
+      items = Array.from(map.values())
+    }
+
+    return items.slice(0, 4).map(normalizeRecord)
+
+  } catch (e) {
+    console.error("RELATED ERROR:", e)
+
+    // =========================
+    // FALLBACK FINAL ABSOLUTO
+    // =========================
+    try {
+      const fallbackRes = await api.searchRecords({ limit: 8 })
+
+      return (fallbackRes.data?.items || [])
+        .filter(r => r.id !== recData.id)
+        .slice(0, 4)
+        .map(normalizeRecord)
+
+    } catch (err) {
+      console.error("FALLBACK FINAL ERROR:", err)
+      return []
+    }
+  }
+}
 // =========================
 // VIEWER
 // =========================
