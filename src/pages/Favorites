@@ -1,0 +1,25 @@
+<script setup>
+import { useFavorites } from '@/composables/useFavorites'
+
+const { favorites } = useFavorites()
+</script>
+
+<template>
+  <v-container>
+    <h1>Favoritos</h1>
+
+    <v-row>
+      <v-col
+        v-for="item in favorites"
+        :key="item.id"
+        cols="12"
+        md="4"
+      >
+        <v-card>
+          <v-img :src="item.image" height="200" />
+          <v-card-title>{{ item.title }}</v-card-title>
+        </v-card>
+      </v-col>
+    </v-row>
+  </v-container>
+</template>

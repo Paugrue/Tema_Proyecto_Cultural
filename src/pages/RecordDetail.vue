@@ -1,5 +1,6 @@
 <template>
   <PageLayout @basic-search="onBasicSearch">
+
     <v-btn 
       :to="{ path: '/record', query: route.query }" 
       variant="text" 
@@ -22,35 +23,53 @@
       <!-- MEDIA PRINCIPAL -->
       <v-col cols="12" md="6">
 
-  <div
-  class="d-flex align-center justify-center cursor-pointer"
-  style="height:550px;"
-  @click="openMainViewer"
->
-  <v-img
-    v-if="mainMedia && mainMedia.thumbnail"
-    :src="imageSize(mainMedia.thumbnail, 'large')"
-    max-height="100%"
-    max-width="100%"
-    contain
-  />
+        <div
+          class="d-flex align-center justify-center cursor-pointer"
+          style="height:550px;"
+          @click="openMainViewer"
+        >
+          <v-img
+            v-if="mainMedia && mainMedia.thumbnail"
+            :src="imageSize(mainMedia.thumbnail, 'large')"
+            max-height="100%"
+            max-width="100%"
+            contain
+          />
 
-  <div
-    v-else
-    class="d-flex align-center justify-center fill-height"
-  >
-    <v-icon size="128">mdi-file-image-outline</v-icon>
-  </div>
-</div>
+          <div
+            v-else
+            class="d-flex align-center justify-center fill-height"
+          >
+            <v-icon size="128">mdi-file-image-outline</v-icon>
+          </div>
+        </div>
 
       </v-col>
 
       <!-- INFO -->
       <v-col cols="12" md="6">
         <div class="pa-md-6">
-          <h1 class="text-h3 font-weight-bold mb-2">
-            {{ record.displayTitle }}
-          </h1>
+
+          <!-- TITULO + FAVORITO -->
+          <div class="d-flex align-center justify-space-between mb-2">
+            <h1 class="text-h3 font-weight-bold">
+              {{ record.displayTitle }}
+            </h1>
+
+            <!-- ⭐ BOTÓN FAVORITO -->
+            <v-btn
+  icon
+  variant="text"
+  @click="toggleFavorite(record)"
+>
+  <v-icon
+    :color="isFavorite(record) ? 'red' : 'success'"
+    size="32"
+  >
+    {{ isFavorite(record) ? 'mdi-heart' : 'mdi-heart-outline' }}
+  </v-icon>
+</v-btn>
+          </div>
 
           <div v-if="record.cleanCollections" class="text-overline text-primary mb-6">
             {{ record.cleanCollections }}
@@ -153,7 +172,6 @@
         <v-row no-gutters align="center" justify="center" class="fill-height">
           <v-col cols="12" class="d-flex justify-center align-center">
 
-            <!-- IMAGEN -->
             <v-img
               v-if="mediaList[currentIndex] && !mediaList[currentIndex].isPdf"
               :src="mediaList[currentIndex].full"
@@ -161,7 +179,6 @@
               contain
             />
 
-            <!-- PDF -->
             <iframe
               v-else-if="mediaList[currentIndex] && mediaList[currentIndex].isPdf"
               :src="mediaList[currentIndex].full"
@@ -188,6 +205,10 @@ import MediaGallery from "@/components/MediaGallery.vue"
 import api from "@/services/api"
 import { normalizeRecord } from "@/utils/normalizeRecord"
 import { imageSize } from "@/utils/imageSize"
+
+import { useFavorites } from '@/composables/useFavorites'
+
+const { isFavorite, toggleFavorite } = useFavorites()
 
 // =========================
 // ROUTER

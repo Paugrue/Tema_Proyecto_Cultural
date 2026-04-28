@@ -22,6 +22,13 @@ const routes = [
   // PAGES
   { path: '/pages', name: 'Pages', component: Pages },
 
+  // FAVORITES
+  {
+    path: '/favorites',
+    name: 'Favorites',
+    component: () => import('@/pages/FavoritesView.vue')
+  },
+
   // ✅ SEARCH (redirige correctamente sin usar Search.vue)
   {
     

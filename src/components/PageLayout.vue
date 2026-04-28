@@ -129,7 +129,6 @@ const onAdvancedSearch = (payload) => {
   width: 100%;
 }
 
-/* 🔥 CLAVE: este es el contenedor que arregla todo */
 .page-content {
   max-width: 1200px;
   margin: 0 auto;

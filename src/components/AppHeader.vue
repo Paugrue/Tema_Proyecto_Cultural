@@ -10,7 +10,7 @@
       class="d-md-none menu-trigger"
       @click="drawer = !drawer"
     >
-      <!-- SVG que NO puede ser hecho transparente por estilos externos -->
+      <!-- SVG  -->
       <svg 
         width="28" 
         height="28" 
@@ -34,6 +34,7 @@
       <router-link to="/record" class="menu-link">Registros</router-link>
       <router-link to="/collection" class="menu-link">Colecciones</router-link>
       <router-link to="/pages" class="menu-link">Páginas</router-link>
+      <router-link to="/favorites" class="menu-link">Favoritos</router-link>
     </div>
 
     <v-spacer />
