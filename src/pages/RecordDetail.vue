@@ -247,6 +247,7 @@ const loadData = async () => {
     // =========================
     const res = await api.getRecord(route.params.id)
     const recData = res.data?.data || res.data || {}
+    
     record.value = normalizeRecord(recData)
 
     // =========================

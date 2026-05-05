@@ -1,40 +1,89 @@
 <template>
-  <div v-if="processed.length" class="metadata-container">
-    <div v-for="(row, i) in processed" :key="i" class="metadata-row">
-      <div class="metadata-label">{{ row.label }}</div>
+  <div v-if="processed && processed.length" class="metadata-container">
+
+    <div
+      v-for="(row, i) in processed"
+      :key="i"
+      class="metadata-row"
+    >
+      <!-- LABEL -->
+      <div class="metadata-label">
+        {{ row.label }}
+      </div>
+
+      <!-- VALUES -->
       <div class="metadata-value">
-        <div v-for="(v, j) in row.values" :key="j">
-          <span v-if="!v.type">{{ v }}</span>
+        <div
+          v-for="(v, j) in row.values"
+          :key="j"
+          class="metadata-item"
+        >
 
-          <span v-else-if="v.type === 'text'">{{ v.value }}</span>
-
-          <a v-else-if="v.type === 'link'" :href="v.value" target="_blank">
+          <!-- ===================== -->
+          <!-- TEXTO -->
+          <!-- ===================== -->
+          <span v-if="v.type === 'text'">
             {{ v.value }}
-          </a>
+          </span>
 
-          <router-link
-            v-else-if="v.type === 'resource' && v.value"
-            :to="`/record/${getResourceId(v)}`"
+          <!-- ===================== -->
+          <!-- LINK -->
+          <!-- ===================== -->
+          <a
+            v-else-if="v.type === 'link'"
+            :href="v.value"
+            target="_blank"
+            class="metadata-link"
           >
             {{ v.label || v.value }}
-          </router-link>
-          
-          <a v-else-if="v.type === 'link'" :href="v.value" target="_blank" class="metadata-link">
-            {{ v.value }}
           </a>
 
-          <router-link
-          v-else-if="v.type === 'resource' && isValidRecordId(v.value)"
-          :to="{ path: `/record/${getResourceId(v)}` }"
-          class="metadata-link"
-        >
-          {{ v.label }}
-        </router-link>
+          <!-- ===================== -->
+          <!-- RESOURCE -->
+          <!-- ===================== -->
+          <template v-else-if="v.type === 'resource' && v.value">
+
+            <!-- RECORD -->
+            <router-link
+              v-if="v.value.type === 'record'"
+              :to="`/record/${v.value.id}`"
+              class="metadata-link"
+            >
+              {{ v.label || v.value.title }}
+            </router-link>
+
+            <!-- COLLECTION -->
+            <router-link
+              v-else-if="v.value.type === 'collection'"
+              :to="`/collection/${v.value.id}`"
+              class="metadata-link"
+            >
+              {{ v.label || v.value.title }}
+            </router-link>
+
+            <!-- MEDIA -->
+            <span v-else-if="v.value.type === 'medio'">
+              {{ v.label || v.value.title }}
+            </span>
+
+          </template>
+
+          <!-- ===================== -->
+          <!-- FALLBACK CONTROLADO -->
+          <!-- ===================== -->
+          <span v-else>
+            {{ v.label || v.value || '—' }}
+          </span>
+
         </div>
       </div>
     </div>
+
   </div>
-  <div v-else class="text-grey text-body-2 py-4">Sin metadatos detallados</div>
+
+  <div v-else class="text-grey text-body-2 py-4">
+    Sin metadatos detallados
+  </div>
 </template>
 
 <script setup>
@@ -47,27 +96,12 @@ const props = defineProps({
 
 const processed = computed(() => processMetadata(props.metadata))
 
-// =========================
-// PARA ENLACES A OTROS RECURSOS
-// =========================
-const getResourceId = (v) => {
-  if (!v?.value) return null
+// -------- recursos --------
+const getMime = (v) => v?.mime || v?.mimetype || ""
 
-  if (typeof v.value === "object") return v.value.id
-
-  const id = String(v.value).trim()
-
-  return /^\d+$/.test(id) ? id : null
-}
-
-const isValidRecordId = (value) => {
-  if (!value) return false
-
-  const v = typeof value === "object" ? value.id : value
-
-  // solo números simples (tu sistema parece usarlos así)
-  return /^\d+$/.test(String(v).trim())
-}
+const isImage = (v) => getMime(v).startsWith("image")
+const isVideo = (v) => getMime(v).startsWith("video")
+const isAudio = (v) => getMime(v).startsWith("audio")
 </script>
 
 <style scoped>
