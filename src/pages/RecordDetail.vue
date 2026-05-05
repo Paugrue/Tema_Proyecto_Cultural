@@ -56,7 +56,7 @@
               {{ record.displayTitle }}
             </h1>
 
-            <!-- ⭐ BOTÓN FAVORITO -->
+            <!-- BOTÓN FAVORITO -->
             <v-btn
   icon
   variant="text"

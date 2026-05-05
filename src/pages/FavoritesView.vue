@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useFavorites } from '@/composables/useFavorites'
+import PageLayout from '@/components/PageLayout.vue'
 import { useRouter } from 'vue-router'
 
 const { favorites, toggleFavorite } = useFavorites()
@@ -37,6 +38,7 @@ const handleMouseMove = (e) => {
 </script>
 
 <template>
+   <PageLayout @basic-search="onBasicSearch">
   <div class="favorites-background">
 
     <v-sheet class="favorites-window pa-6" elevation="10" rounded="lg">
@@ -104,7 +106,7 @@ const handleMouseMove = (e) => {
         >
           <v-card class="expo-card">
 
-            <!-- ❤️ quitar -->
+            <!--  quitar -->
             <v-btn
               icon
               class="favorite-btn"
@@ -138,17 +140,16 @@ const handleMouseMove = (e) => {
     </v-sheet>
 
   </div>
+  </PageLayout>
 </template>
 
 <style scoped>
 /* FONDO */
 .favorites-background {
-  min-height: 100vh;
+  min-height: 100%;
   display: flex;
   justify-content: center;
-  align-items: center;
-  background: var(--color-background);
-  padding: 20px;
+  align-items: flex-start;
 }
 
 /* CONTENEDOR */
@@ -205,7 +206,7 @@ const handleMouseMove = (e) => {
   font-weight: 600;
   font-size: 14px;
   display: -webkit-box;
-
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -241,3 +242,4 @@ const handleMouseMove = (e) => {
   box-shadow: 0 20px 40px rgba(0,0,0,0.4);
 }
 </style>
+
