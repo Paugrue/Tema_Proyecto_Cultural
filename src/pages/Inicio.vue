@@ -27,14 +27,11 @@
         :key="col.id"
         cols="12" sm="6" md="4" lg="3"
       >
-        <v-card
-          class="record-card hoverable"
-          style="cursor:pointer"
-          @click="$router.push('/collection/' + col.id)"
-        >
-          <v-img :src="col.thumbnailFull" height="180" cover class="rounded-t-lg" />
-          <v-card-title>{{ col.title }}</v-card-title>
-        </v-card>
+<BaseCard
+  :image="col.thumbnailFull"
+  :title="col.title"
+  @click="$router.push('/collection/' + col.id)"
+/>
       </v-col>
     </v-row>
 
@@ -72,6 +69,7 @@
 import { ref, onMounted } from 'vue'
 import PageLayout from '@/components/PageLayout.vue'
 import api from '@/services/api'
+import BaseCard from '@/components/BaseCard.vue'
 
 const collections = ref([])
 const API_BASE = 'https://arcadium.cluster24.libnamic.eu'
@@ -195,4 +193,6 @@ onMounted(fetchCollections)
     width: 100%;
   }
 }
+
+
 </style>

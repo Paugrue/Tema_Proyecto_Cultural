@@ -9,7 +9,6 @@
         md="4"
         lg="4"
       >
-
         <v-card flat class="media-item-card bg-transparent">
 
           <!-- IMAGEN -->
@@ -54,15 +53,15 @@
                 Ver archivo
               </span>
 
-<a
-  :href="m.full"
-  target="_blank"
-  rel="noopener"
-  class="action-link-orange"
-  @click.prevent="forceDownload(m)"
->
-  Descargar
-</a>
+              <a
+                :href="m.full"
+                target="_blank"
+                rel="noopener"
+                class="action-link-orange"
+                @click.prevent="forceDownload(m)"
+              >
+                Descargar
+              </a>
             </div>
           </div>
 
@@ -79,6 +78,7 @@
     >
       <v-card class="bg-black">
 
+        <!-- CERRAR -->
         <v-toolbar flat color="transparent" class="position-absolute" style="z-index: 10; width: 100%">
           <v-spacer />
           <v-btn
@@ -89,6 +89,22 @@
           />
         </v-toolbar>
 
+        <!-- FLECHAS -->
+        <v-btn
+          icon="mdi-chevron-left"
+          class="viewer-arrow left"
+          @click="prevImage"
+          v-if="currentIndex > 0"
+        />
+
+        <v-btn
+          icon="mdi-chevron-right"
+          class="viewer-arrow right"
+          @click="nextImage"
+          v-if="currentIndex < items.length - 1"
+        />
+
+        <!-- CONTENIDO -->
         <v-row no-gutters align="center" justify="center" class="fill-height pa-4">
           <v-col cols="12" class="d-flex justify-center align-center fill-height">
 
@@ -115,6 +131,7 @@
           </v-col>
         </v-row>
 
+        <!-- TÍTULO -->
         <div
           v-if="selectedImage"
           class="position-absolute w-100 text-center py-6"
@@ -131,83 +148,79 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps({
   items: { type: Array, default: () => [] }
-});
+})
 
-const viewerDialog = ref(false);
-const selectedImage = ref(null);
+const viewerDialog = ref(false)
+const selectedImage = ref(null)
+const currentIndex = ref(0)
 
-/* =========================
-   VIEWER
-========================= */
+/* VIEWER */
 const openViewer = (index) => {
-  selectedImage.value = props.items[index];
-  viewerDialog.value = true;
-};
+  currentIndex.value = index
+  selectedImage.value = props.items[index]
+  viewerDialog.value = true
+}
 
-/* =========================
-   FALLBACK IMÁGENES
-========================= */
-const failedImages = ref(new Set());
+const nextImage = () => {
+  if (currentIndex.value < props.items.length - 1) {
+    currentIndex.value++
+    selectedImage.value = props.items[currentIndex.value]
+  }
+}
+
+const prevImage = () => {
+  if (currentIndex.value > 0) {
+    currentIndex.value--
+    selectedImage.value = props.items[currentIndex.value]
+  }
+}
+
+/* TECLADO */
+const handleKey = (e) => {
+  if (!viewerDialog.value) return
+  if (e.key === 'ArrowRight') nextImage()
+  if (e.key === 'ArrowLeft') prevImage()
+}
+
+onMounted(() => window.addEventListener('keydown', handleKey))
+onUnmounted(() => window.removeEventListener('keydown', handleKey))
+
+/* FALLBACK IMÁGENES */
+const failedImages = ref(new Set())
 
 const onImageError = (item) => {
-  if (item?.id) failedImages.value.add(item.id);
-};
+  if (item?.id) failedImages.value.add(item.id)
+}
 
-/* =========================
-   PDF DETECTION (ÚNICA FUENTE DE VERDAD)
-========================= */
+/* PDF */
 const isPdfFile = (item) => {
   return (
     item?.isPdf === true ||
     /\.pdf(\?|$)/i.test(item?.full || '')
-  );
-};
-
-/* =========================
-   SAFE THUMBNAIL
-========================= */
-const safeThumbnail = (m) => {
-  const url = m?.thumbnail;
-  if (!url || typeof url !== "string") return null;
-
-  const cleaned = url.trim();
-
-  if (
-    !cleaned ||
-    cleaned === "null" ||
-    cleaned === "undefined" ||
-    cleaned.includes("undefined")
-  ) return null;
-
-  try {
-    return new URL(cleaned, window.location.origin).href;
-  } catch {
-    return null;
-  }
-};
-
-const getMainViewerSrc = (item) => {
-  if (!item) return null;
-
-  // si viene de PDF → usar thumbnail (NO full)
-  if (item.isPdf) {
-    return item.thumbnail;
-  }
-
-  return item.full;
-};
-
-/* =========================
-   DESCARGA DE ARCHIVOS
-========================= */
-const downloadFile = (item) => {
-  openFile(item.id)
+  )
 }
 
+/* THUMBNAIL */
+const safeThumbnail = (m) => {
+  const url = m?.thumbnail
+  if (!url || typeof url !== "string") return null
+
+  const cleaned = url.trim()
+
+  if (!cleaned || cleaned === "null" || cleaned === "undefined") return null
+
+  try {
+    return new URL(cleaned, window.location.origin).href
+  } catch {
+    return null
+  }
+}
+
+/* DESCARGA */
 const forceDownload = (item) => {
   openFile(item.id, item.full)
 }
@@ -219,10 +232,6 @@ const openFile = (id, fallbackUrl = null) => {
 
   const a = document.createElement("a")
   a.href = url
-
-  // deja que el navegador decida:
-  // - descarga si el servidor lo fuerza
-  // - o abre el archivo si no
   a.target = "_blank"
   a.rel = "noopener noreferrer"
 
@@ -230,21 +239,7 @@ const openFile = (id, fallbackUrl = null) => {
   a.click()
   a.remove()
 }
-
-const getFileName = (item) => {
-  if (item?.title) return item.title
-
-  if (item?.full) {
-    const parts = item.full.split("/")
-    return parts[parts.length - 1] || "archivo"
-  }
-
-  return "archivo"
-}
-
-
 </script>
-
 
 <style scoped>
 .media-gallery-container {
@@ -281,5 +276,23 @@ const getFileName = (item) => {
 
 .fill-height {
   height: 100vh;
+}
+
+/* FLECHAS */
+.viewer-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 20;
+  background: rgba(0,0,0,0.6);
+  color: white;
+}
+
+.viewer-arrow.left {
+  left: 10px;
+}
+
+.viewer-arrow.right {
+  right: 10px;
 }
 </style>

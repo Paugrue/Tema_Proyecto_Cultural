@@ -17,44 +17,12 @@
         md="4"
         lg="3"
       >
-        <v-card
-          class="record-card-wrapper"
-          variant="flat"
-          @click="goToRecord(record)"
-        >
-
-          <!-- IMAGE (FIXED) -->
-          <v-img
-            v-if="record.imageDisplay"
-            :src="record.imageDisplay"
-            height="250"
-            cover
-            class="rounded-lg mb-3"
-          >
-            <template v-slot:placeholder>
-              <v-row class="fill-height ma-0" align="center" justify="center">
-                <v-progress-circular indeterminate />
-              </v-row>
-            </template>
-          </v-img>
-
-          <!-- FALLBACK (NO SPINNER) -->
-          <div v-else class="image-fallback">
-            <v-icon size="40" color="grey">
-              mdi-image-off-outline
-            </v-icon>
-          </div>
-
-          <div class="card-content">
-            <div class="record-title">
-              {{ record.displayTitle }}
-            </div>
-
-            <div v-if="record.cleanTags" class="record-meta">
-              {{ record.cleanTags }}
-            </div>
-          </div>
-        </v-card>
+<BaseCard
+  :image="record.imageDisplay"
+  :title="record.displayTitle"
+  :subtitle="record.cleanTags"
+  @click="goToRecord(record)"
+/>
       </v-col>
 
       <!-- EMPTY -->
@@ -102,6 +70,8 @@ import { ref, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '@/services/api'
 import PageLayout from '@/components/PageLayout.vue'
+import RecordCard from '@/components/RecordCard.vue'
+import BaseCard from '@/components/BaseCard.vue'
 
 const route = useRoute()
 const router = useRouter()

@@ -21,67 +21,11 @@
         md="4"
         lg="3"
       >
-        <v-card
-          class="record-card"
-          @click="$router.push('/collection/' + col.id)"
-        >
-          <v-hover v-slot="{ isHovering, props }">
-
-            <!-- IMAGEN (FIX REAL) -->
-            <v-img
-              v-bind="props"
-              :src="col.imageDisplay"
-              height="280"
-              cover
-              class="rounded-lg position-relative"
-              @error="col.imageDisplay = null"
-              v-if="col.imageDisplay"
-            >
-              <v-fade-transition>
-                <div
-                  v-if="isHovering"
-                  class="d-flex transition-fast-in-fast-out v-card--reveal"
-                  style="height: 100%; background: rgba(0,0,0,0.15);"
-                ></div>
-              </v-fade-transition>
-
-              <template v-slot:placeholder>
-                <v-row class="fill-height ma-0" align="center" justify="center">
-                  <v-progress-circular indeterminate color="grey-lighten-2" />
-                </v-row>
-              </template>
-            </v-img>
-
-            <!-- FALLBACK SI FALLA IMAGEN -->
-            <template v-else>
-              <div class="image-placeholder rounded-lg">
-                <v-icon size="40" color="grey-lighten-1">
-                  mdi-image-off-outline
-                </v-icon>
-              </div>
-            </template>
-
-          </v-hover>
-
-          <v-card-item class="px-0 pt-4">
-            <v-card-title class="text-h6 font-weight-bold pb-1">
-              {{ col.title || 'Colección sin título' }}
-            </v-card-title>
-
-            <v-card-subtitle
-              v-if="col.cleanTags && col.cleanTags.length"
-              class="text-caption text-uppercase font-weight-medium text-primary"
-            >
-              {{ col.cleanTags.join(' • ') }}
-            </v-card-subtitle>
-          </v-card-item>
-
-          <v-card-text class="px-0 pt-0 text-body-2 text-grey-darken-1">
-            <p class="line-clamp-2">
-              {{ col.description || 'Explora esta colección cultural.' }}
-            </p>
-          </v-card-text>
-        </v-card>
+<BaseCard
+  :image="col.imageDisplay"
+  :title="col.title"
+  @click="$router.push('/collection/' + col.id)"
+/>
       </v-col>
 
       <!-- EMPTY -->
@@ -111,7 +55,7 @@
       <!-- PAGINACIÓN -->
       <v-col
         cols="12"
-        class="d-flex justify-center align-center mt-6"
+        class="d-flex justify-center mt-6"
         v-if="showPagination"
       >
         <div class="pagination-wrapper">
@@ -148,6 +92,7 @@ import { ref, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PageLayout from '@/components/PageLayout.vue'
 import api from '@/services/api'
+import BaseCard from '@/components/BaseCard.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -286,6 +231,57 @@ watch(() => route.query.page, (p) => {
 </script>
 
 <style scoped>
+.collection-card {
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.collection-card:hover {
+  transform: translateY(-4px);
+}
+
+/* =========================
+   LOADING
+========================= */
+
+.image-loading {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =========================
+   TEXTO CARD
+========================= */
+
+.card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 8px;
+}
+
+.card-subtitle {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: rgb(var(--v-theme-primary));
+  margin-bottom: 8px;
+}
+
+.card-description {
+  font-size: 0.92rem;
+  color: rgba(0,0,0,0.7);
+
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* =========================
+   PAGINACIÓN 
+========================= */
+/* PAGINACIÓN */
 .pagination-wrapper {
   display: flex;
   align-items: center;
@@ -298,18 +294,5 @@ watch(() => route.query.page, (p) => {
   text-align: center;
   font-size: 16px;
   font-weight: 600;
-}
-
-.image-placeholder {
-  height: 280px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  /* 🔥 usa el color real de la card */
-  background:  #E6C08E;
-
-  /* opcional: más integración visual */
-  color: rgb(var(--v-theme-on-surface));
 }
 </style>

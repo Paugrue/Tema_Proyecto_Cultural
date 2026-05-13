@@ -1,14 +1,18 @@
 <template>
-  <v-card class="record-card" @click="$router.push('/record/' + normalized.id)" >
-    <v-img :src="normalized.thumbnail" height="200" cover class="record-image" />
-    <v-card-text class="record-content">
-      <div class="record-title">
-        {{ normalized.title }}
-      </div>
-      <div v-if="normalized.collections" class="record-meta">
-        {{ normalized.collections }}
-      </div>
-    </v-card-text>
+  <v-card
+    class="record-card hoverable"
+    @click="$router.push('/record/' + normalized.id)"
+  >
+    <v-img
+      :src="normalized.thumbnail"
+      height="180"
+      cover
+      class="rounded-t-lg"
+    />
+
+    <v-card-title class="record-title">
+      {{ normalized.title }}
+    </v-card-title>
   </v-card>
 </template>
 
@@ -22,34 +26,21 @@ export default {
     normalized() {
       const r = this.record || {}
 
-      // Título
-      const title = r.title || r.metadata_fields?.["dcterms:title"]?.[0]?.["@value"] || "Sin título"
+      const title =
+        r.title ||
+        r.metadata_fields?.["dcterms:title"]?.[0]?.["@value"] ||
+        "Sin título"
 
-      // Thumbnail
       let thumbnail = r.thumbnail
       if (!thumbnail) thumbnail = '/placeholder.png'
-      else if (!/^https?:\/\//.test(thumbnail))
+      else if (!/^https?:\/\//.test(thumbnail)) {
         thumbnail = `${API_BASE}${thumbnail.startsWith('/') ? '' : '/'}${thumbnail}`
-
-      // Colecciones / Repositorios
-      const collections = []
-
-      // 1. collections_titles normales
-      if (Array.isArray(r.collections_titles)) {
-        collections.push(...r.collections_titles)
       }
-
-      // 2. Repositorios tipo glam.record en dcterms:subject
-      const subjects = r.metadata_fields?.["dcterms:subject"] || []
-      subjects.forEach((s) => {
-        if (s.model === "glam.record" && s.label) collections.push(s.label)
-      })
 
       return {
         id: r.id,
         title,
-        thumbnail,
-        collections: collections.length ? collections.join(', ') : null
+        thumbnail
       }
     }
   }
@@ -57,5 +48,18 @@ export default {
 </script>
 
 <style scoped>
+.record-card {
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
 
+.record-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.record-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
 </style>
