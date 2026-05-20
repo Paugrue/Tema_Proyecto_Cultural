@@ -38,35 +38,11 @@
         md="4"
         lg="3"
       >
-        <v-card
-          flat
-          class="record-card"
-          @click="$router.push('/record/' + record.id)"
-        >
-
-          <v-img
-            v-if="record.imageDisplay"
-            :src="record.imageDisplay"
-            height="220"
-            cover
-            class="rounded-lg bg-grey-lighten-2 mb-3"
-          >
-            <template #placeholder>
-              <v-row class="fill-height ma-0" align="center" justify="center">
-                <v-progress-circular indeterminate />
-              </v-row>
-            </template>
-          </v-img>
-
-          <div v-else class="image-fallback">
-            <v-icon size="40" color="grey">mdi-image-off-outline</v-icon>
-          </div>
-
-          <v-card-title class="pa-0 text-body-1 font-weight-bold">
-            {{ record.displayTitle }}
-          </v-card-title>
-
-        </v-card>
+<BaseCard
+  :image="record.imageDisplay"
+  :title="record.displayTitle"
+  @click="$router.push('/record/' + record.id)"
+/>
       </v-col>
     </v-row>
 
@@ -135,6 +111,7 @@ import { useRoute } from "vue-router"
 import PageLayout from "@/components/PageLayout.vue"
 import api from "@/services/api"
 import { normalizeRecord } from "@/utils/normalizeRecord"
+import BaseCard from '@/components/BaseCard.vue'
 
 const route = useRoute()
 
@@ -234,26 +211,6 @@ watch(
 
 
 <style scoped>
-.record-card {
-  cursor: pointer;
-  background: transparent !important;
-
-  transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease;
-
-  padding: var(--card-padding-lg) !important;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.record-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.05);
-}
-
-
 
 .rounded-lg {
   border-radius: 12px !important;
